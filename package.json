@@ -19,7 +19,14 @@
     "README.md",
     "LICENSE"
   ],
-  "keywords": ["ioBroker", "vis-2", "eufy", "eusec", "camera", "livestream"],
+  "keywords": [
+    "ioBroker",
+    "vis-2",
+    "eufy",
+    "eusec",
+    "camera",
+    "livestream"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/typhosj/ioBroker.vis2-eusec.git"
@@ -62,16 +69,16 @@
     "@alcalzone/release-script-plugin-iobroker": "^5.2.0",
     "@alcalzone/release-script-plugin-license": "^5.2.2",
     "@iobroker/eslint-config": "^2.3.4",
-    "@iobroker/testing": "^5.3.0",
+    "@iobroker/testing": "^6.3.0",
     "@iobroker/types": "^7.2.2",
     "@iobroker/types-vis-2": "~2.14.4",
     "@types/node": "^26.1.1",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.1",
-    "jsdom": "^29.1.1",
+    "jsdom": "^30.1.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "typescript": "~6.0.3",
-    "vitest": "^4.1.10"
+    "vitest": "^5.0.3"
   }
 }
