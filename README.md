@@ -51,6 +51,8 @@ states are found from there.
 
 - (typhosj) Initial version: live player, event popup and snapshot widget
 
+[Older changelog entries](CHANGELOG_OLD.md)
+
 ## License
 
 MIT License
