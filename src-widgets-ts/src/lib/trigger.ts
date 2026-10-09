@@ -33,7 +33,7 @@ export class TriggerWatcher {
 
 /** Keeps the popup open for a while after the last trigger. */
 export class AutoClose {
-    private timer: ReturnType<typeof setTimeout> | undefined;
+    private timer: number | undefined;
     private open = false;
 
     /**
@@ -48,7 +48,7 @@ export class AutoClose {
     /** A trigger fired: open, or restart the time. */
     fire(): void {
         clearTimeout(this.timer);
-        this.timer = setTimeout(() => this.close(), this.closeAfterMs);
+        this.timer = window.setTimeout(() => this.close(), this.closeAfterMs);
         if (!this.open) {
             this.open = true;
             this.onChange(true);

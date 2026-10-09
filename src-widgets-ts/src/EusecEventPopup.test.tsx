@@ -3,8 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { EventPopup, type EventPopupProps, prefillTriggers } from './EusecEventPopup';
-import { CHANNEL, type FakeSocket, cameraObjects, fakeSocket, stateOf } from './testing/fakeSocket';
-import { settle } from './testing/settle';
+import { CHANNEL, type FakeSocket, cameraObjects, fakeSocket, stateOf } from './test/fakeSocket';
+import { settle } from './test/settle';
 
 const PERSON = `${CHANNEL}.person_detected`;
 const mounted: Array<() => void> = [];

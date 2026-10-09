@@ -52,8 +52,8 @@ export class StreamController {
     private live = false;
     private startedByMe = false;
     private disposed = false;
-    private startTimer: ReturnType<typeof setTimeout> | undefined;
-    private loadTimer: ReturnType<typeof setTimeout> | undefined;
+    private startTimer: number | undefined;
+    private loadTimer: number | undefined;
 
     /** @param options Settings and callbacks */
     constructor(private readonly options: StreamControllerOptions) {}
@@ -175,7 +175,7 @@ export class StreamController {
             return;
         }
         clearTimeout(this.loadTimer);
-        this.loadTimer = setTimeout(() => {
+        this.loadTimer = window.setTimeout(() => {
             this.loadTimer = undefined;
             if (this.phase === 'starting') {
                 this.clearStartTimer();
@@ -212,7 +212,7 @@ export class StreamController {
             this.startedByMe = true;
             this.options.write('start_stream');
         }
-        this.startTimer = setTimeout(() => {
+        this.startTimer = window.setTimeout(() => {
             this.startTimer = undefined;
             this.fail('timeout');
         }, this.options.startTimeoutMs);

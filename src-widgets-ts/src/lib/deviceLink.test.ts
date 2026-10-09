@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { CHANNEL, cameraObjects, fakeSocket, stateOf } from '../testing/fakeSocket';
+import { CHANNEL, cameraObjects, fakeSocket, stateOf } from '../test/fakeSocket';
 import { parseDeviceChannel } from './device';
 import { DeviceLink, type DeviceListener, pictureUrl } from './deviceLink';
 

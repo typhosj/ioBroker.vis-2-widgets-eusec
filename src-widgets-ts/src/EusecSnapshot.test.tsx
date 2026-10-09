@@ -3,8 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { SnapshotTile, type SnapshotTileProps } from './EusecSnapshot';
-import { CHANNEL, cameraObjects, fakeSocket, stateOf } from './testing/fakeSocket';
-import { settle } from './testing/settle';
+import { CHANNEL, cameraObjects, fakeSocket, stateOf } from './test/fakeSocket';
+import { settle } from './test/settle';
 
 const PICTURE = `${CHANNEL}.picture_url`;
 const mounted: Array<() => void> = [];

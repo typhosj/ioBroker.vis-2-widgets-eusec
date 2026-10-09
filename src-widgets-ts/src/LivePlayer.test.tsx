@@ -5,8 +5,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import EusecLive from './EusecLive';
 import { LivePlayer, type LivePlayerProps } from './LivePlayer';
-import { CHANNEL, type FakeSocket, cameraObjects, fakeSocket, stateOf } from './testing/fakeSocket';
-import { settle } from './testing/settle';
+import { CHANNEL, type FakeSocket, cameraObjects, fakeSocket, stateOf } from './test/fakeSocket';
+import { settle } from './test/settle';
 
 const ALIVE = 'system.adapter.eusec.0.alive';
 const mounted: Array<() => void> = [];

@@ -1,0 +1,33 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: cron
+      cronjob: 13 4 8 * *
+      timezone: Europe/Berlin
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 15
+    versioning-strategy: increase
+    ignore:
+      - dependency-name: '@types/node'
+        update-types:
+          - version-update:semver-major
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: cron
+      cronjob: 37 4 8 * *
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 15
+  - package-ecosystem: npm
+    directory: /src-widgets-ts
+    schedule:
+      interval: cron
+      cronjob: 19 4 8 * *
+      timezone: Europe/Berlin
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 15
+    versioning-strategy: increase

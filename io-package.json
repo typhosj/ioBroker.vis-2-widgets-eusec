@@ -58,7 +58,6 @@
     "loglevel": "info",
     "restartAdapters": ["vis-2"],
     "onlyWWW": true,
-    "noConfig": true,
     "singleton": true,
     "type": "visualization-widgets",
     "mode": "none",
@@ -69,7 +68,7 @@
       "config": "none"
     },
     "dependencies": [{ "js-controller": ">=6.0.11" }],
-    "globalDependencies": [{ "admin": ">=7.6.20" }, { "eusec": ">=3.0.2" }],
+    "globalDependencies": [{ "eusec": ">=3.0.2" }],
     "visWidgets": {
       "vis2EusecWidgets": {
         "i18n": "component",
