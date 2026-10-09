@@ -1,4 +1,11 @@
 version: 2
+# Held back on purpose, in both npm trees:
+# - react, react-dom and their types stay on 18: the vis-2 host supplies React 18 as a
+#   module-federation singleton, so building against 19 still runs on 18.
+# - typescript stays on 6.0: typescript-eslint supports <6.1, and TS 7 has no lib/typescript.js.
+# - @iobroker/types-vis-2, vite and @module-federation/vite stay on the versions of
+#   vis2-materialdesign: newer ones built different chunks on Linux and Windows, which fails the
+#   build-is-current job. Update them together with vis2-materialdesign, by hand.
 updates:
   - package-ecosystem: npm
     directory: /
@@ -14,6 +21,23 @@ updates:
       - dependency-name: '@types/node'
         update-types:
           - version-update:semver-major
+      - dependency-name: 'react'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'react-dom'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: '@types/react'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: '@types/react-dom'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'typescript'
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
+      - dependency-name: '@iobroker/types-vis-2'
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -31,3 +55,26 @@ updates:
       default-days: 7
     open-pull-requests-limit: 15
     versioning-strategy: increase
+    ignore:
+      - dependency-name: '@types/node'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'react'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'react-dom'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: '@types/react'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: '@types/react-dom'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'typescript'
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
+      - dependency-name: '@iobroker/types-vis-2'
+      - dependency-name: 'vite'
+      - dependency-name: '@module-federation/vite'
