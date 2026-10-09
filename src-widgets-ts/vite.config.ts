@@ -16,6 +16,7 @@ export default {
             exposes: {
                 './EusecLive': './src/EusecLive',
                 './EusecEventPopup': './src/EusecEventPopup',
+                './EusecSnapshot': './src/EusecSnapshot',
                 './translations': './src/translations',
             },
             remotes: {},
