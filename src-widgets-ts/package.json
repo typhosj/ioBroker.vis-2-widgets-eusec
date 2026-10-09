@@ -13,7 +13,7 @@
     "undici": "^7.29.0"
   },
   "dependencies": {
-    "@iobroker/types-vis-2": "~2.14.4",
+    "@iobroker/types-vis-2": "~2.20.1",
     "@module-federation/vite": "^1.16.13",
     "@vitejs/plugin-react": "^6.0.3",
     "react": "18.3.1",
