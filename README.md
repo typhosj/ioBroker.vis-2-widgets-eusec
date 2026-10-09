@@ -5,6 +5,9 @@
 Widgets for vis-2 that show the cameras of the [eusec](https://github.com/iobroker-community-adapters/ioBroker.eusec)
 adapter (eufy Security). Requires eusec 3.0.2 or later.
 
+**This project is not affiliated with Anker or eufy. eufy and eufy Security are trademarks of their
+respective owners and are used here only to name the cameras the widgets work with.**
+
 ## Widgets
 
 - **Live camera**: plays the livestream while the widget is visible and stops it when it is not.
@@ -53,3 +56,31 @@ states are found from there.
 MIT License
 
 Copyright (c) 2026 typhosj <typhosj@gmx.de>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+### Third-party code
+
+The bundle in `widgets/vis2-eusec/` contains code of these packages, each under the MIT license
+with the permission notice above:
+
+- React, React DOM and Scheduler: Copyright (c) Facebook, Inc. and its affiliates.
+- Module Federation runtime (`@module-federation/runtime`, `runtime-core`, `sdk`,
+  `error-codes`): Copyright (c) 2023-present zhouxiao (zhoushaw), Copyright (c) 2023-present
+  zhanghang (2heal1), Copyright (c) 2020 ScriptedAlchemy LLC (Zack Jackson) Zhou Shaw (zhouxiao).
