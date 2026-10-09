@@ -74,13 +74,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-### Third-party code
-
-The bundle in `widgets/vis2-eusec/` contains code of these packages, each under the MIT license
-with the permission notice above:
-
-- React, React DOM and Scheduler: Copyright (c) Facebook, Inc. and its affiliates.
-- Module Federation runtime (`@module-federation/runtime`, `runtime-core`, `sdk`,
-  `error-codes`): Copyright (c) 2023-present zhouxiao (zhoushaw), Copyright (c) 2023-present
-  zhanghang (2heal1), Copyright (c) 2020 ScriptedAlchemy LLC (Zack Jackson) Zhou Shaw (zhouxiao).
