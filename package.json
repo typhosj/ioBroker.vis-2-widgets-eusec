@@ -1,0 +1,77 @@
+{
+  "name": "iobroker.vis2-eusec",
+  "version": "0.0.1",
+  "description": "vis-2 widgets for the cameras of the eusec adapter: live player, event popup and snapshot",
+  "author": {
+    "name": "typhosj",
+    "email": "typhosj@gmx.de"
+  },
+  "homepage": "https://github.com/typhosj/ioBroker.vis2-eusec",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "admin/*.png",
+    "widgets/**/*.js",
+    "widgets/**/*.json",
+    "io-package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": ["ioBroker", "vis-2", "eufy", "eusec", "camera", "livestream"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/typhosj/ioBroker.vis2-eusec.git"
+  },
+  "bugs": {
+    "url": "https://github.com/typhosj/ioBroker.vis2-eusec/issues"
+  },
+  "main": "widgets/vis2-eusec/customWidgets.js",
+  "scripts": {
+    "build": "node tasks",
+    "lint": "eslint src-widgets-ts/src",
+    "typecheck": "tsc -p src-widgets-ts/tsconfig.json --noEmit",
+    "test:package": "mocha test/package.js --exit",
+    "test:package-custom": "node test/package-custom.js",
+    "test:widgets": "vitest run",
+    "test": "npm run test:package && npm run test:package-custom && npm run test:widgets",
+    "pr:check": "npm run build && npm run lint && npm run typecheck && npm test && npm pack --dry-run",
+    "release": "release-script --noPush"
+  },
+  "overrides": {
+    "esbuild": "0.25.12",
+    "brace-expansion": "^5.0.9",
+    "minimatch": "^10.2.6",
+    "serialize-javascript": "^7.1.0",
+    "diff": "^8.0.4",
+    "uuid": "^11.1.1",
+    "@iobroker/types-vis-2": {
+      "vite": "^7.3.6"
+    },
+    "tsconfck": {
+      "typescript": "$typescript"
+    },
+    "nanoid": "^3.3.18",
+    "js-yaml": "^4.3.1",
+    "undici": "^7.29.0",
+    "postcss": "^8.5.26"
+  },
+  "devDependencies": {
+    "@alcalzone/release-script": "^5.2.1",
+    "@alcalzone/release-script-plugin-iobroker": "^5.2.0",
+    "@alcalzone/release-script-plugin-license": "^5.2.2",
+    "@iobroker/eslint-config": "^2.3.4",
+    "@iobroker/testing": "^5.3.0",
+    "@iobroker/types": "^7.2.2",
+    "@iobroker/types-vis-2": "~2.14.4",
+    "@types/node": "^26.1.1",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.1",
+    "jsdom": "^29.1.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.10"
+  }
+}

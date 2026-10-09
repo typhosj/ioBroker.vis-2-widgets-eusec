@@ -1,0 +1,6 @@
+# LF in the repository AND in every working tree, Windows included. `text=auto` alone normalizes
+# only what is stored and hands Windows CRLF on checkout — which silently changed the build output:
+# vite carries the line endings of src-widgets-ts/index.html into the built index.html, whose byte
+# size is recorded in the committed mf-stats.json. A Windows build then produced 949 bytes where CI
+# produced 940, and the "committed bundles must match the build" job failed on a file nobody edited.
+* text=auto eol=lf

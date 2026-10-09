@@ -1,0 +1,86 @@
+{
+  "common": {
+    "name": "vis2-eusec",
+    "version": "0.0.1",
+    "news": {
+      "0.0.1": {
+        "en": "Initial version",
+        "de": "Erste Version",
+        "ru": "Первая версия",
+        "pt": "Versão inicial",
+        "nl": "Eerste versie",
+        "fr": "Version initiale",
+        "it": "Versione iniziale",
+        "es": "Versión inicial",
+        "pl": "Pierwsza wersja",
+        "uk": "Перша версія",
+        "zh-cn": "初始版本"
+      }
+    },
+    "titleLang": {
+      "en": "eufy cameras for vis-2",
+      "de": "eufy-Kameras für vis-2",
+      "ru": "Камеры eufy для vis-2",
+      "pt": "Câmeras eufy para vis-2",
+      "nl": "eufy-camera's voor vis-2",
+      "fr": "Caméras eufy pour vis-2",
+      "it": "Telecamere eufy per vis-2",
+      "es": "Cámaras eufy para vis-2",
+      "pl": "Kamery eufy dla vis-2",
+      "uk": "Камери eufy для vis-2",
+      "zh-cn": "适用于 vis-2 的 eufy 摄像头"
+    },
+    "desc": {
+      "en": "Live player, event popup and snapshot widgets for the cameras of the eusec adapter",
+      "de": "Live-Player, Ereignis-Popup und Snapshot-Widgets für die Kameras des eusec-Adapters",
+      "ru": "Виджеты живого просмотра, всплывающего окна событий и снимка для камер адаптера eusec",
+      "pt": "Widgets de reprodução ao vivo, pop-up de eventos e instantâneo para as câmeras do adaptador eusec",
+      "nl": "Widgets voor livebeeld, gebeurtenis-pop-up en momentopname voor de camera's van de eusec-adapter",
+      "fr": "Widgets de lecture en direct, de fenêtre d'événement et d'instantané pour les caméras de l'adaptateur eusec",
+      "it": "Widget di riproduzione live, popup degli eventi e istantanea per le telecamere dell'adattatore eusec",
+      "es": "Widgets de reproducción en directo, ventana de eventos e instantánea para las cámaras del adaptador eusec",
+      "pl": "Widżety odtwarzania na żywo, okna zdarzeń i migawki dla kamer adaptera eusec",
+      "uk": "Віджети живого перегляду, вікна подій і знімка для камер адаптера eusec",
+      "zh-cn": "适用于 eusec 适配器摄像头的实时播放、事件弹窗和快照小部件"
+    },
+    "authors": ["typhosj <typhosj@gmx.de>"],
+    "keywords": ["vis-2", "eufy", "eusec", "camera", "livestream"],
+    "licenseInformation": {
+      "license": "MIT",
+      "type": "free",
+      "link": "https://opensource.org/license/mit"
+    },
+    "platform": "Javascript/Node.js",
+    "icon": "vis2-eusec.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/typhosj/ioBroker.vis2-eusec/master/admin/vis2-eusec.png",
+    "readme": "https://github.com/typhosj/ioBroker.vis2-eusec/blob/master/README.md",
+    "loglevel": "info",
+    "restartAdapters": ["vis-2"],
+    "onlyWWW": true,
+    "noConfig": true,
+    "singleton": true,
+    "type": "visualization-widgets",
+    "mode": "none",
+    "connectionType": "local",
+    "dataSource": "push",
+    "tier": 3,
+    "adminUI": {
+      "config": "none"
+    },
+    "dependencies": [{ "js-controller": ">=6.0.11" }],
+    "globalDependencies": [{ "admin": ">=7.6.20" }, { "eusec": ">=3.0.2" }],
+    "visWidgets": {
+      "vis2EusecWidgets": {
+        "i18n": "component",
+        "name": "vis2EusecWidgets",
+        "url": "vis2-eusec/customWidgets.js",
+        "bundlerType": "module",
+        "components": ["EusecLive"]
+      }
+    }
+  },
+  "native": {},
+  "objects": [],
+  "instanceObjects": []
+}
