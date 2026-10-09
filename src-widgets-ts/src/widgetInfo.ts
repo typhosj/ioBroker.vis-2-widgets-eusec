@@ -1,4 +1,4 @@
-import type { RxWidgetInfo, RxWidgetInfoAttributesField } from '@iobroker/types-vis-2';
+import type { RxWidgetInfo, RxWidgetInfoAttributesField, RxWidgetInfoAttributesFieldID } from '@iobroker/types-vis-2';
 
 import { I18N_PREFIX } from './i18n';
 import { LIMITS } from './lib/attrs';
@@ -42,7 +42,7 @@ export function createInfo(id: string, widgetLabel: string, fields: RxWidgetInfo
     };
 }
 
-export const deviceField: RxWidgetInfoAttributesField = {
+export const deviceField: RxWidgetInfoAttributesFieldID = {
     name: 'device',
     label: label('device'),
     type: 'id',

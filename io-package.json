@@ -76,7 +76,7 @@
         "name": "vis2EusecWidgets",
         "url": "vis2-eusec/customWidgets.js",
         "bundlerType": "module",
-        "components": ["EusecLive"]
+        "components": ["EusecLive", "EusecEventPopup"]
       }
     }
   },

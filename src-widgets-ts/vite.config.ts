@@ -15,6 +15,7 @@ export default {
             filename: 'customWidgets.js',
             exposes: {
                 './EusecLive': './src/EusecLive',
+                './EusecEventPopup': './src/EusecEventPopup',
                 './translations': './src/translations',
             },
             remotes: {},
