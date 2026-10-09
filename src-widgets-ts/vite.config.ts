@@ -13,7 +13,10 @@ export default {
             manifest: true,
             name: 'vis2EusecWidgets',
             filename: 'customWidgets.js',
-            exposes: {},
+            exposes: {
+                './EusecLive': './src/EusecLive',
+                './translations': './src/translations',
+            },
             remotes: {},
             shared: moduleFederationShared(pack),
             dts: false,
