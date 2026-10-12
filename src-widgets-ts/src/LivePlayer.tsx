@@ -40,7 +40,8 @@ const status: React.CSSProperties = {
     padding: '6px 10px',
     background: 'rgba(0, 0, 0, 0.6)',
     color: '#fff',
-    font: '14px sans-serif',
+    // The font of the surrounding dialog or widget.
+    fontSize: 14,
     display: 'flex',
     alignItems: 'center',
     gap: 8,

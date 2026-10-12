@@ -1,7 +1,12 @@
-import type { RxWidgetInfo, RxWidgetInfoAttributesField, RxWidgetInfoAttributesFieldID } from '@iobroker/types-vis-2';
+import type {
+    RxWidgetInfo,
+    RxWidgetInfoAttributesField,
+    RxWidgetInfoAttributesFieldID,
+    RxWidgetInfoGroup,
+} from '@iobroker/types-vis-2';
 
 import { I18N_PREFIX } from './i18n';
-import { LIMITS } from './lib/attrs';
+import { LIMITS, clampNumber, cssValue } from './lib/attrs';
 
 export type PtzMode = 'hover' | 'always' | 'never';
 
@@ -27,9 +32,15 @@ const label = (key: string): string => `${I18N_PREFIX}${key}`;
  * @param id Template ID
  * @param widgetLabel Translation key of the widget name, without prefix
  * @param fields Attributes
+ * @param groups Further attribute groups after the common one
  * @returns The widget info
  */
-export function createInfo(id: string, widgetLabel: string, fields: RxWidgetInfoAttributesField[]): RxWidgetInfo {
+export function createInfo(
+    id: string,
+    widgetLabel: string,
+    fields: RxWidgetInfoAttributesField[],
+    groups: RxWidgetInfoGroup[] = [],
+): RxWidgetInfo {
     return {
         id,
         visSet: 'vis2-eusec',
@@ -38,7 +49,7 @@ export function createInfo(id: string, widgetLabel: string, fields: RxWidgetInfo
         visName: id,
         visWidgetLabel: label(widgetLabel),
         visPrev: '',
-        visAttrs: [{ name: 'common', fields }],
+        visAttrs: [{ name: 'common', fields }, ...groups],
     };
 }
 
@@ -106,5 +117,91 @@ export function playerProps(data: Record<string, unknown>): PlayerSettings {
         startTimeoutS: data.startTimeout,
         ptz: ptzMode(data.ptz),
         ptzRepeatMs: data.ptzRepeat,
+    };
+}
+
+/** Colours and fonts of the livestream dialog of the popup and the snapshot. */
+export interface DialogLook {
+    /** Backdrop around the dialog. */
+    overlayColor: string;
+    /** Dialog behind the player. */
+    background: string;
+    /** Header bar. */
+    headerBackground: string;
+    /** Title text. */
+    titleColor: string;
+    /** Font family of the whole dialog, notices of the player included. */
+    font: string;
+    /** Title size in px. */
+    titleSizePx: number;
+    /** Close button. */
+    closeColor: string;
+}
+
+/** The look before the attributes existed; widgets saved back then keep it. */
+export const DEFAULT_DIALOG_LOOK: DialogLook = {
+    overlayColor: 'rgba(0, 0, 0, 0.6)',
+    background: '#000',
+    headerBackground: '#111',
+    titleColor: '#fff',
+    font: 'sans-serif',
+    titleSizePx: 16,
+    closeColor: '#fff',
+};
+
+const colorField = (name: string, def: string): RxWidgetInfoAttributesField => ({
+    name,
+    label: label(name),
+    type: 'color',
+    default: def,
+});
+
+/** Attributes of the dialog group: title, size, colours and fonts. */
+export const dialogFields: RxWidgetInfoAttributesField[] = [
+    { name: 'title', label: label('title'), type: 'text' },
+    {
+        name: 'size',
+        label: label('size'),
+        type: 'number',
+        min: LIMITS.sizePercent.min,
+        max: LIMITS.sizePercent.max,
+        default: LIMITS.sizePercent.def,
+    },
+    colorField('dialogOverlay', DEFAULT_DIALOG_LOOK.overlayColor),
+    colorField('dialogBackground', DEFAULT_DIALOG_LOOK.background),
+    colorField('dialogHeader', DEFAULT_DIALOG_LOOK.headerBackground),
+    colorField('dialogTitleColor', DEFAULT_DIALOG_LOOK.titleColor),
+    colorField('dialogCloseColor', DEFAULT_DIALOG_LOOK.closeColor),
+    { name: 'dialogFont', label: label('dialogFont'), type: 'fontname' },
+    {
+        name: 'dialogTitleSize',
+        label: label('dialogTitleSize'),
+        type: 'number',
+        min: LIMITS.titleSizePx.min,
+        max: LIMITS.titleSizePx.max,
+        default: LIMITS.titleSizePx.def,
+    },
+];
+
+/** The dialog group for createInfo(). */
+export const dialogGroup: RxWidgetInfoGroup = { name: 'dialog', label: label('group_dialog'), fields: dialogFields };
+
+/**
+ * The dialog look of a widget's rxData, with the default for every unusable attribute.
+ *
+ * @param data rxData of the widget
+ * @returns The look for LiveDialog
+ */
+export function dialogLook(data: Record<string, unknown>): DialogLook {
+    const def = DEFAULT_DIALOG_LOOK;
+    const { min, max } = LIMITS.titleSizePx;
+    return {
+        overlayColor: cssValue(data.dialogOverlay, 'color', def.overlayColor),
+        background: cssValue(data.dialogBackground, 'color', def.background),
+        headerBackground: cssValue(data.dialogHeader, 'color', def.headerBackground),
+        titleColor: cssValue(data.dialogTitleColor, 'color', def.titleColor),
+        font: cssValue(data.dialogFont, 'font-family', def.font),
+        titleSizePx: clampNumber(data.dialogTitleSize, min, max, def.titleSizePx),
+        closeColor: cssValue(data.dialogCloseColor, 'color', def.closeColor),
     };
 }

@@ -9,7 +9,16 @@ import type { LinkSocket } from './lib/deviceLink';
 import { AutoClose, DEFAULT_TRIGGERS, TriggerWatcher, validTriggers } from './lib/trigger';
 import { LiveDialog } from './LiveDialog';
 import { LivePlayer } from './LivePlayer';
-import { type PlayerSettings, createInfo, deviceField, playerFields, playerProps } from './widgetInfo';
+import {
+    type DialogLook,
+    type PlayerSettings,
+    createInfo,
+    deviceField,
+    dialogGroup,
+    dialogLook,
+    playerFields,
+    playerProps,
+} from './widgetInfo';
 
 /** Props of EventPopup. */
 export interface EventPopupProps {
@@ -25,6 +34,8 @@ export interface EventPopupProps {
     sizePercent: unknown;
     /** Raw title attribute. */
     title: unknown;
+    /** Colours and fonts of the dialog. */
+    look?: DialogLook;
     /** The vis-2 editor is open. */
     editMode: boolean;
     /** Player attributes. */
@@ -89,7 +100,8 @@ export function EventPopup(props: EventPopupProps): React.JSX.Element | null {
         const ids = triggerKey.split('\n');
         const autoClose = new AutoClose(closeAfterMs, setOpen);
         autoCloseRef.current = autoClose;
-        const watcher = new TriggerWatcher(() => autoClose.fire());
+        // A trigger that turned true while another view was shown still opens, as long as it is recent.
+        const watcher = new TriggerWatcher(() => autoClose.fire(), closeAfterMs);
         // socket-client calls the handler once with the current value - the watcher's baseline.
         const handler: ioBroker.StateChangeHandler = (id, state) => watcher.update(id, state);
         for (const id of ids) {
@@ -123,6 +135,7 @@ export function EventPopup(props: EventPopupProps): React.JSX.Element | null {
             open={open}
             title={typeof props.title === 'string' ? props.title : ''}
             sizePercent={props.sizePercent}
+            look={props.look}
             onClose={close}
         >
             <LivePlayer
@@ -162,30 +175,26 @@ const Base: typeof VisRxWidget<Record<string, unknown>> = window.visRxWidget;
 export default class EusecEventPopup extends Base {
     /** Attributes and name of the widget in the vis-2 editor. */
     static getWidgetInfo(): RxWidgetInfo {
-        return createInfo('tplVis2EusecEventPopup', 'popup_widget', [
-            deviceWithPrefill,
-            triggerField(1),
-            triggerField(2),
-            triggerField(3),
-            {
-                name: 'closeAfter',
-                label: `${I18N_PREFIX}closeAfter`,
-                type: 'number',
-                min: LIMITS.closeAfterS.min,
-                max: LIMITS.closeAfterS.max,
-                default: LIMITS.closeAfterS.def,
-            },
-            {
-                name: 'size',
-                label: `${I18N_PREFIX}size`,
-                type: 'number',
-                min: LIMITS.sizePercent.min,
-                max: LIMITS.sizePercent.max,
-                default: LIMITS.sizePercent.def,
-            },
-            { name: 'title', label: `${I18N_PREFIX}title`, type: 'text' },
-            ...playerFields,
-        ]);
+        return createInfo(
+            'tplVis2EusecEventPopup',
+            'popup_widget',
+            [
+                deviceWithPrefill,
+                triggerField(1),
+                triggerField(2),
+                triggerField(3),
+                {
+                    name: 'closeAfter',
+                    label: `${I18N_PREFIX}closeAfter`,
+                    type: 'number',
+                    min: LIMITS.closeAfterS.min,
+                    max: LIMITS.closeAfterS.max,
+                    default: LIMITS.closeAfterS.def,
+                },
+                ...playerFields,
+            ],
+            [dialogGroup],
+        );
     }
 
     /** Instance access to the static widget info, which vis-2 calls. */
@@ -209,6 +218,7 @@ export default class EusecEventPopup extends Base {
                 closeAfterS={data.closeAfter}
                 sizePercent={data.size}
                 title={data.title}
+                look={dialogLook(data)}
                 editMode={!!this.props.editMode}
                 player={playerProps(data)}
             />

@@ -15,9 +15,14 @@ respective owners and are used here only to name the cameras the widgets work wi
   that have them, preset buttons from eusec 3.2.0 on.
 - **Event popup**: invisible until one of its triggers turns true (by default `ringing` and
   `person_detected` of the camera, where they exist), then opens the livestream in a dialog and
-  closes it after a set time. It opens only on the view it is placed on; place it on every view
-  where it should appear, or in a view that all other views include.
+  closes it after a set time. A trigger that turned true shortly before the view was shown (less
+  than the close time ago) still opens it, so a script may switch to the view after the event. It
+  opens only on the view it is placed on; place it on every view where it should appear, or in a
+  view that all other views include.
 - **Snapshot**: the last picture of the camera and its age. A tap opens the livestream.
+
+The dialog of the event popup and the snapshot takes its title, size, colours and font from the
+"Dialog" attribute group.
 
 In every widget, pick the camera channel (`eusec.0.<station>.cameras.<camera>`) as "Camera"; all
 states are found from there.

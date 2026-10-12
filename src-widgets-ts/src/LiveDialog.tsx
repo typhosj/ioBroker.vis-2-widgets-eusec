@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 
 import { t } from './i18n';
 import { LIMITS, clampNumber } from './lib/attrs';
+import { DEFAULT_DIALOG_LOOK, type DialogLook } from './widgetInfo';
 
 /** Props of LiveDialog. */
 export interface LiveDialogProps {
@@ -12,6 +13,8 @@ export interface LiveDialogProps {
     title: string;
     /** Raw size attribute (% of the screen). */
     sizePercent: unknown;
+    /** Colours and fonts, the old look when left out. */
+    look?: DialogLook;
     /** Close button, backdrop or Escape. */
     onClose: () => void;
     /** Dialog content. */
@@ -22,7 +25,6 @@ const backdrop: React.CSSProperties = {
     position: 'fixed',
     inset: 0,
     zIndex: 10000,
-    background: 'rgba(0, 0, 0, 0.6)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -30,7 +32,6 @@ const backdrop: React.CSSProperties = {
 const panel: React.CSSProperties = {
     display: 'flex',
     flexDirection: 'column',
-    background: '#000',
     borderRadius: 8,
     overflow: 'hidden',
 };
@@ -39,16 +40,12 @@ const header: React.CSSProperties = {
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '4px 8px',
-    background: '#111',
-    color: '#fff',
-    font: '16px sans-serif',
 };
 const closeButton: React.CSSProperties = {
     minWidth: 44,
     height: 44,
     border: 0,
     background: 'transparent',
-    color: '#fff',
     fontSize: 22,
     cursor: 'pointer',
 };
@@ -80,24 +77,25 @@ export function LiveDialog(props: LiveDialogProps): React.JSX.Element | null {
     }
     const { min, max, def } = LIMITS.sizePercent;
     const size = `${clampNumber(props.sizePercent, min, max, def)}%`;
+    const look = props.look ?? DEFAULT_DIALOG_LOOK;
     return createPortal(
         <div
             role="dialog"
             aria-modal="true"
             aria-label={props.title || t('live')}
-            style={backdrop}
+            style={{ ...backdrop, background: look.overlayColor }}
             onClick={onClose}
         >
             <div
-                style={{ ...panel, width: size, height: size }}
+                style={{ ...panel, width: size, height: size, background: look.background, fontFamily: look.font }}
                 onClick={event => event.stopPropagation()}
             >
-                <div style={header}>
-                    <span>{props.title}</span>
+                <div style={{ ...header, background: look.headerBackground, fontSize: look.titleSizePx }}>
+                    <span style={{ color: look.titleColor }}>{props.title}</span>
                     <button
                         type="button"
                         aria-label={t('close')}
-                        style={closeButton}
+                        style={{ ...closeButton, color: look.closeColor }}
                         onClick={onClose}
                     >
                         ✕

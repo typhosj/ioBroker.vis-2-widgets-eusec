@@ -3,13 +3,21 @@ import type { RxRenderWidgetProps, RxWidgetInfo } from '@iobroker/types-vis-2';
 import type VisRxWidget from '@iobroker/types-vis-2/visRxWidget';
 
 import { I18N_PREFIX, t } from './i18n';
-import { LIMITS } from './lib/attrs';
 import { parseDeviceChannel } from './lib/device';
 import { type LinkSocket, pictureUrl } from './lib/deviceLink';
 import { relativeTime } from './lib/relativeTime';
 import { LiveDialog } from './LiveDialog';
 import { LivePlayer } from './LivePlayer';
-import { type PlayerSettings, createInfo, deviceField, playerFields, playerProps } from './widgetInfo';
+import {
+    type DialogLook,
+    type PlayerSettings,
+    createInfo,
+    deviceField,
+    dialogGroup,
+    dialogLook,
+    playerFields,
+    playerProps,
+} from './widgetInfo';
 
 /** How often "3 minutes ago" is recomputed. */
 const CLOCK_MS = 30_000;
@@ -26,6 +34,8 @@ export interface SnapshotTileProps {
     title: unknown;
     /** Raw size attribute of the dialog (% of the screen). */
     sizePercent: unknown;
+    /** Colours and fonts of the dialog. */
+    look?: DialogLook;
     /** The vis-2 editor is open. */
     editMode: boolean;
     /** vis-2 language. */
@@ -143,6 +153,7 @@ export function SnapshotTile(props: SnapshotTileProps): React.JSX.Element {
                 open={open}
                 title={typeof props.title === 'string' ? props.title : ''}
                 sizePercent={props.sizePercent}
+                look={props.look}
                 onClose={close}
             >
                 <LivePlayer
@@ -162,20 +173,16 @@ const Base: typeof VisRxWidget<Record<string, unknown>> = window.visRxWidget;
 export default class EusecSnapshot extends Base {
     /** Attributes and name of the widget in the vis-2 editor. */
     static getWidgetInfo(): RxWidgetInfo {
-        return createInfo('tplVis2EusecSnapshot', 'snapshot_widget', [
-            deviceField,
-            { name: 'tapOpensLive', label: `${I18N_PREFIX}tapOpensLive`, type: 'checkbox', default: true },
-            { name: 'title', label: `${I18N_PREFIX}title`, type: 'text' },
-            {
-                name: 'size',
-                label: `${I18N_PREFIX}size`,
-                type: 'number',
-                min: LIMITS.sizePercent.min,
-                max: LIMITS.sizePercent.max,
-                default: LIMITS.sizePercent.def,
-            },
-            ...playerFields,
-        ]);
+        return createInfo(
+            'tplVis2EusecSnapshot',
+            'snapshot_widget',
+            [
+                deviceField,
+                { name: 'tapOpensLive', label: `${I18N_PREFIX}tapOpensLive`, type: 'checkbox', default: true },
+                ...playerFields,
+            ],
+            [dialogGroup],
+        );
     }
 
     /** Instance access to the static widget info, which vis-2 calls. */
@@ -198,6 +205,7 @@ export default class EusecSnapshot extends Base {
                 tapOpensLive={data.tapOpensLive !== false}
                 title={data.title}
                 sizePercent={data.size}
+                look={dialogLook(data)}
                 editMode={!!this.props.editMode}
                 language={Base.getLanguage()}
                 player={playerProps(data)}

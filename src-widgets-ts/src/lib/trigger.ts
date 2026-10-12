@@ -3,13 +3,23 @@ export const DEFAULT_TRIGGERS: readonly string[] = ['ringing', 'person_detected'
 
 /**
  * Fires when a trigger state changes to true and the adapter confirmed it. The first value per
- * state is the baseline: a true that is already there when the page loads opens nothing.
+ * state is the baseline: a true that is already there when the page loads or the view opens
+ * fires only if it turned true at most `recentMs` ago. A script that switches the view right
+ * after the event still gets its popup; a true that hangs from long ago opens nothing on reload.
  */
 export class TriggerWatcher {
     private readonly last = new Map<string, boolean>();
 
-    /** @param onFire Called with the ID of the trigger that fired */
-    constructor(private readonly onFire: (id: string) => void) {}
+    /**
+     * @param onFire Called with the ID of the trigger that fired
+     * @param recentMs How old a true found at the start may be and still fire; 0 never fires
+     * @param now Clock of the page
+     */
+    constructor(
+        private readonly onFire: (id: string) => void,
+        private readonly recentMs: number,
+        private readonly now: () => number = Date.now,
+    ) {}
 
     /**
      * Feeds a value of a trigger state.
@@ -17,7 +27,7 @@ export class TriggerWatcher {
      * @param id State ID
      * @param state New state, null or undefined when it does not exist
      */
-    update(id: string, state: { val: unknown; ack: boolean } | null | undefined): void {
+    update(id: string, state: { val: unknown; ack: boolean; lc?: number } | null | undefined): void {
         const active = state?.val === true;
         if (active && state?.ack !== true) {
             // A command, not yet confirmed by the adapter.
@@ -25,9 +35,19 @@ export class TriggerWatcher {
         }
         const previous = this.last.get(id);
         this.last.set(id, active);
-        if (previous === false && active) {
+        if (active && (previous === false || (previous === undefined && this.isRecent(state?.lc)))) {
             this.onFire(id);
         }
+    }
+
+    private isRecent(lc: unknown): boolean {
+        // lc is the server's clock; the absolute age also takes a page clock running behind it.
+        return (
+            this.recentMs > 0 &&
+            typeof lc === 'number' &&
+            Number.isFinite(lc) &&
+            Math.abs(this.now() - lc) <= this.recentMs
+        );
     }
 }
 
