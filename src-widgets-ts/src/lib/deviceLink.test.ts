@@ -54,6 +54,20 @@ describe('DeviceLink', () => {
         expect(events.calls).toEqual(['live:true', 'live:false', 'live:false']);
     });
 
+    it('reports every new picture by its write time, also when eusec writes the same file name again', async () => {
+        const url = '/files/eusec.0/T8010P00/last_event/T8410P00.jpg';
+        const socket = fakeSocket({
+            objects: cameraObjects(['start_stream', 'picture_url']),
+            states: { [`${CHANNEL}.picture_url`]: stateOf(url, true, 7) },
+        });
+        const events = listener();
+        await new DeviceLink(socket, device, page, events).open();
+        events.calls.length = 0;
+        socket.emit(`${CHANNEL}.picture_url`, url, true, 9);
+        socket.emit(`${CHANNEL}.picture_url`, null);
+        expect(events.calls).toEqual([`picture:${url}@9`, 'picture:@0']);
+    });
+
     it('returns null for a channel without start_stream', async () => {
         const socket = fakeSocket({ objects: cameraObjects(['picture_url']) });
         expect(await new DeviceLink(socket, device, page, listener()).open()).toBeNull();

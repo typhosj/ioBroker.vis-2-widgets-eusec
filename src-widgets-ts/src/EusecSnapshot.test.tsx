@@ -1,6 +1,6 @@
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { SnapshotTile, type SnapshotTileProps } from './EusecSnapshot';
 import { CHANNEL, cameraObjects, fakeSocket, stateOf } from './test/fakeSocket';
@@ -46,6 +46,21 @@ describe('SnapshotTile', () => {
         expect(container.querySelector('img')?.getAttribute('src')).toBe(
             '/files/eusec.0/T8010P00/last_event/T8410P00.jpg?t=1234',
         );
+    });
+
+    it('loads the next event picture and its age although eusec writes the same file name', async () => {
+        vi.useFakeTimers({ toFake: ['Date'] });
+        vi.setSystemTime(100_000);
+        try {
+            const url = '/files/eusec.0/T8010P00/last_event/T8410P00.jpg';
+            const socket = fakeSocket({ states: { [PICTURE]: stateOf(url, true, 1_000) } });
+            const container = await mount({}, socket);
+            await settle(() => socket.emit(PICTURE, url, true, 95_000));
+            expect(container.querySelector('img')?.getAttribute('src')).toBe(`${url}?t=95000`);
+            expect(container.textContent).toContain('5 seconds ago');
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it('says "no picture" for an undecodable picture', async () => {

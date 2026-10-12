@@ -11,8 +11,11 @@ export interface FakeSocket extends LinkSocket {
     writes: Array<{ id: string; val: ioBroker.StateValue; ack: boolean | undefined }>;
     /** Every first argument of unsubscribeState. */
     unsubscribed: unknown[];
-    /** Sends a state change to the subscriber; null means the state was deleted. */
-    emit(id: string, val: ioBroker.StateValue | null, ack?: boolean, lc?: number): void;
+    /**
+     * Sends a state change to the subscriber; null means the state was deleted. Like js-controller,
+     * `lc` moves to `ts` only when the value changes.
+     */
+    emit(id: string, val: ioBroker.StateValue | null, ack?: boolean, ts?: number): void;
 }
 
 /**
@@ -20,11 +23,12 @@ export interface FakeSocket extends LinkSocket {
  *
  * @param val Value
  * @param ack Confirmed by the adapter
- * @param lc Last change (ms)
+ * @param lc Last change of the value (ms)
+ * @param ts Last write (ms), `lc` when left out
  * @returns The state
  */
-export function stateOf(val: ioBroker.StateValue, ack = true, lc = 1): ioBroker.State {
-    return { val, ack, ts: lc, lc, from: 'system.adapter.test.0', q: 0 };
+export function stateOf(val: ioBroker.StateValue, ack = true, lc = 1, ts = lc): ioBroker.State {
+    return { val, ack, ts, lc, from: 'system.adapter.test.0', q: 0 };
 }
 
 /**
@@ -64,7 +68,7 @@ export function fakeSocket(
     options: { objects?: Record<string, unknown>; states?: Record<string, ioBroker.State>; native?: unknown } = {},
 ): FakeSocket {
     const objects = options.objects ?? {};
-    const states = options.states ?? {};
+    const states = { ...options.states };
     const handlers = new Map<string, ioBroker.StateChangeHandler>();
     const writes: FakeSocket['writes'] = [];
     const unsubscribed: unknown[] = [];
@@ -94,8 +98,15 @@ export function fakeSocket(
             writes.push({ id, val, ack });
             return Promise.resolve();
         },
-        emit(id, val, ack = true, lc = 2) {
-            void handlers.get(id)?.(id, val === null ? null : stateOf(val, ack, lc));
+        emit(id, val, ack = true, ts = 2) {
+            if (val === null) {
+                delete states[id];
+                void handlers.get(id)?.(id, null);
+                return;
+            }
+            const previous = states[id];
+            states[id] = stateOf(val, ack, previous?.val === val ? previous.lc : ts, ts);
+            void handlers.get(id)?.(id, states[id]);
         },
     };
 }

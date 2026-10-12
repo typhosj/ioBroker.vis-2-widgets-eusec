@@ -22,7 +22,10 @@ export interface DeviceListener {
     onLivestream(active: boolean): void;
     /** `system.adapter.eusec.N.alive` changed. */
     onAlive(alive: boolean): void;
-    /** Sanitized `picture_url` and its `lc`. */
+    /**
+     * Sanitized `picture_url` and its `ts`. Not `lc`: eusec writes the same file name for every
+     * event, so the value - and with it `lc` - stays the same while the picture changes.
+     */
     onPicture(url: string, changedAt: number): void;
 }
 
@@ -131,7 +134,7 @@ export class DeviceLink {
         } else if (id === `system.adapter.${instance}.alive`) {
             this.listener.onAlive(state?.val === true);
         } else if (id === `${channelId}.picture_url`) {
-            this.listener.onPicture(pictureUrl(state?.val), typeof state?.lc === 'number' ? state.lc : 0);
+            this.listener.onPicture(pictureUrl(state?.val), typeof state?.ts === 'number' ? state.ts : 0);
         }
     };
 }

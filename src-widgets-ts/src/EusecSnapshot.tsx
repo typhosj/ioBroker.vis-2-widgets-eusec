@@ -98,8 +98,9 @@ export function SnapshotTile(props: SnapshotTileProps): React.JSX.Element {
         if (!pictureId) {
             return undefined;
         }
+        // ts, not lc: eusec writes the same file name for every event, see DeviceListener.onPicture.
         const handler: ioBroker.StateChangeHandler = (_id, state) =>
-            setPicture({ url: pictureUrl(state?.val), changedAt: typeof state?.lc === 'number' ? state.lc : 0 });
+            setPicture({ url: pictureUrl(state?.val), changedAt: typeof state?.ts === 'number' ? state.ts : 0 });
         socket
             .subscribeState(pictureId, handler)
             .catch((error: unknown) => console.warn(`vis2-eusec: cannot subscribe ${pictureId}: ${String(error)}`));
