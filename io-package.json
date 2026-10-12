@@ -18,17 +18,17 @@
       }
     },
     "titleLang": {
-      "en": "eufy cameras for vis-2",
-      "de": "eufy-Kameras für vis-2",
-      "ru": "Камеры eufy для vis-2",
-      "pt": "Câmeras eufy para vis-2",
-      "nl": "eufy-camera's voor vis-2",
-      "fr": "Caméras eufy pour vis-2",
-      "it": "Telecamere eufy per vis-2",
-      "es": "Cámaras eufy para vis-2",
-      "pl": "Kamery eufy dla vis-2",
-      "uk": "Камери eufy для vis-2",
-      "zh-cn": "适用于 vis-2 的 eufy 摄像头"
+      "en": "eusec camera widgets",
+      "de": "eusec-Kamerawidgets",
+      "ru": "Виджеты камер eusec",
+      "pt": "Widgets de câmeras eusec",
+      "nl": "eusec-camerawidgets",
+      "fr": "Widgets de caméras eusec",
+      "it": "Widget per telecamere eusec",
+      "es": "Widgets de cámaras eusec",
+      "pl": "Widżety kamer eusec",
+      "uk": "Віджети камер eusec",
+      "zh-cn": "eusec 摄像头小部件"
     },
     "desc": {
       "en": "Live player, event popup and snapshot widgets for the cameras of the eusec adapter",
