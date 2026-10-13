@@ -39,6 +39,22 @@ jobs:
       - run: npm ci
       - run: npm test
 
+  # The bundle shares React with vis-2, which moves to React 19 (ioBroker.vis-2#689) while older
+  # vis-2 versions stay on React 18. The tests above run React 18; this job runs them on React 19.
+  widgets-react-19:
+    needs: check-and-lint
+    if: contains(github.event.head_commit.message, '[skip ci]') == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save react@19 react-dom@19
+      - run: npm run test:widgets
+
   # `widgets/` is a checked-in build artifact - it is what the package ships, and nothing above
   # rebuilds it. Without this job a commit that changes a widget source but forgets the rebuild
   # passes every check and releases the previous bundle.
@@ -60,7 +76,7 @@ jobs:
           git diff --exit-code -- widgets || { echo "::error::committed build output is stale - run 'npm run build' and commit the result"; exit 1; }
 
   deploy:
-    needs: [check-and-lint, adapter-tests, build-is-current]
+    needs: [check-and-lint, adapter-tests, widgets-react-19, build-is-current]
     if: |
       contains(github.event.head_commit.message, '[skip ci]') == false &&
       github.event_name == 'push' &&

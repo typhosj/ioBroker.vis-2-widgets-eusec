@@ -1,11 +1,15 @@
 version: 2
 # Held back on purpose, in both npm trees:
-# - react, react-dom and their types stay on 18: the vis-2 host supplies React 18 as a
-#   module-federation singleton, so building against 19 still runs on 18.
+# - react, react-dom and their types stay on 18: the vis-2 host supplies React as a
+#   module-federation singleton, 18 in older and 19 in newer versions (ioBroker.vis-2#689). The
+#   bundle's React 18 copies are only fallbacks, which a 19 host never loads (test/package-custom.js
+#   checks that), while a build against 19 fails on hosts with 18.
 # - typescript stays on 6.0: typescript-eslint supports <6.1, and TS 7 has no lib/typescript.js.
-# - @iobroker/types-vis-2, vite and @module-federation/vite stay on the versions of
-#   vis2-materialdesign: newer ones built different chunks on Linux and Windows, which fails the
-#   build-is-current job. Update them together with vis2-materialdesign, by hand.
+# - @iobroker/types-vis-2, vite and @module-federation/vite are updated by hand: a new version may
+#   build different chunks on Linux and Windows, which fails the build-is-current job, and
+#   @module-federation/vite decides whether the React 18 fallbacks load eagerly. vite and
+#   @module-federation/vite follow vis2-materialdesign; types-vis-2 is ahead of it (2.20 has no
+#   dependencies, 2.14 pulled vite 7 and MUI 6 into the tree).
 updates:
   - package-ecosystem: npm
     directory: /
