@@ -53,7 +53,7 @@ states are found from there.
     ### **WORK IN PROGRESS**
 -->
 
-### **WORK IN PROGRESS**
+### 0.1.0 (2026-10-13)
 
 - (typhosj) Initial version: live player, event popup and snapshot widget
 

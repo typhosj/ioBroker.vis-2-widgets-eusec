@@ -1,20 +1,20 @@
 {
   "common": {
     "name": "vis2-eusec",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "news": {
-      "0.0.1": {
-        "en": "Initial version",
-        "de": "Erste Version",
-        "ru": "Первая версия",
-        "pt": "Versão inicial",
-        "nl": "Eerste versie",
-        "fr": "Version initiale",
-        "it": "Versione iniziale",
-        "es": "Versión inicial",
-        "pl": "Pierwsza wersja",
-        "uk": "Перша версія",
-        "zh-cn": "初始版本"
+      "0.1.0": {
+        "en": "Initial version: live player, event popup and snapshot widget",
+        "de": "Erste Version: Live-Player, Ereignis-Popup und Snapshot-Widget",
+        "ru": "Первая версия: виджеты живого просмотра, всплывающего окна событий и снимка",
+        "pt": "Versão inicial: widgets de reprodução ao vivo, pop-up de eventos e instantâneo",
+        "nl": "Eerste versie: widgets voor livebeeld, gebeurtenis-pop-up en momentopname",
+        "fr": "Version initiale : widgets de lecture en direct, de fenêtre d'événement et d'instantané",
+        "it": "Prima versione: widget di riproduzione live, popup degli eventi e istantanea",
+        "es": "Versión inicial: widgets de reproducción en directo, ventana de eventos e instantánea",
+        "pl": "Pierwsza wersja: widżety odtwarzania na żywo, okna zdarzeń i migawki",
+        "uk": "Перша версія: віджети живого перегляду, вікна подій і знімка",
+        "zh-cn": "初始版本：实时播放、事件弹窗和快照小部件"
       }
     },
     "titleLang": {
