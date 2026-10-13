@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 import { t } from './i18n';
@@ -59,6 +59,24 @@ const body: React.CSSProperties = { position: 'relative', flex: 1 };
  */
 export function LiveDialog(props: LiveDialogProps): React.JSX.Element | null {
     const { open, onClose } = props;
+    const closeRef = useRef<HTMLButtonElement>(null);
+
+    // The focus goes to the close button, so Enter and Escape act on the dialog, and back where it
+    // came from when the dialog closes.
+    // Known limit: no focus trap; Tab can still reach the page behind the backdrop.
+    useEffect(() => {
+        if (!open) {
+            return undefined;
+        }
+        const previous = document.activeElement;
+        closeRef.current?.focus();
+        return () => {
+            if (previous instanceof HTMLElement && previous.isConnected) {
+                previous.focus();
+            }
+        };
+    }, [open]);
+
     useEffect(() => {
         if (!open) {
             return undefined;
@@ -93,6 +111,7 @@ export function LiveDialog(props: LiveDialogProps): React.JSX.Element | null {
                 <div style={{ ...header, background: look.headerBackground, fontSize: look.titleSizePx }}>
                     <span style={{ color: look.titleColor }}>{props.title}</span>
                     <button
+                        ref={closeRef}
                         type="button"
                         aria-label={t('close')}
                         style={{ ...closeButton, color: look.closeColor }}

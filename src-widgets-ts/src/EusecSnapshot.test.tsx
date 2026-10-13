@@ -83,6 +83,22 @@ describe('SnapshotTile', () => {
         expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
     });
 
+    it('moves the focus into the dialog and back to the tile when it closes', async () => {
+        const socket = fakeSocket({
+            objects: cameraObjects(['start_stream']),
+            states: { 'system.adapter.eusec.0.alive': stateOf(true) },
+            native: { livestreamOnDemand: true },
+        });
+        const container = await mount({}, socket);
+        const tile = container.querySelector('[role="button"]') as HTMLElement;
+        tile.focus();
+        await settle(() => tile.click());
+        expect(document.activeElement?.getAttribute('aria-label')).toBe('vis2_eusec_close');
+        await settle(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })));
+        expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+        expect(document.activeElement).toBe(tile);
+    });
+
     it('does not open when tapping is switched off or in the editor', async () => {
         const off = await mount({ tapOpensLive: false });
         expect(off.querySelector('[role="button"]')).toBeNull();
