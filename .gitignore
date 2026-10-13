@@ -4,5 +4,4 @@ src-widgets-ts/build
 src-widgets-ts/node_modules
 iobroker.*.tgz
 .commitinfo
-.commitmessage
 Thumbs.db
