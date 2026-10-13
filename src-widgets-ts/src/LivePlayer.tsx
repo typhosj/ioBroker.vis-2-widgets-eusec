@@ -244,6 +244,9 @@ export function LivePlayer(props: LivePlayerProps): React.JSX.Element {
                     src={view.iframeSrc}
                     title={t('live')}
                     allow="autoplay; fullscreen"
+                    // The origin comes from the livestream state. The page may run its player in its
+                    // own origin, but neither navigate the vis page nor open popups.
+                    sandbox="allow-scripts allow-same-origin"
                     style={fill}
                     onLoad={() => controllerRef.current?.iframeLoaded()}
                 />

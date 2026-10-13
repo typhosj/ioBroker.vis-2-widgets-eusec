@@ -69,6 +69,8 @@ describe('LivePlayer', () => {
             socket.emit(`${CHANNEL}.livestream`, 'http://192.168.178.106:1984/stream.html?src=T8410P00'),
         );
         expect(container.querySelector('iframe')?.getAttribute('src')).toContain('stream.html?src=T8410P00&mode=mse');
+        // go2rtc's page may run scripts in its own origin, but neither navigate the vis page nor open popups.
+        expect(container.querySelector('iframe')?.getAttribute('sandbox')).toBe('allow-scripts allow-same-origin');
     });
 
     it('never starts a stream in the editor', async () => {
