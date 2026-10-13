@@ -30,8 +30,10 @@ export interface DeviceListener {
 }
 
 /**
- * Keeps a picture URL of the web server (eusec writes `/files/eusec.N/...`) or an http(s) URL,
- * drops everything else and the `.unknown` file eusec stores for an undecodable cloud picture.
+ * Keeps a picture path of the web server or an http(s) URL, drops everything else and the
+ * `.unknown` file eusec stores for an undecodable cloud picture. eusec writes the admin path
+ * `/files/eusec.N/...`; the web adapter, which serves vis-2, answers it with 404 and serves the
+ * file under `/eusec.N/...`.
  *
  * @param value Value of `picture_url`
  * @returns The URL for an img, or ''
@@ -40,11 +42,11 @@ export function pictureUrl(value: unknown): string {
     if (typeof value !== 'string') {
         return '';
     }
-    const url = value.trim();
-    if (url.endsWith('.unknown')) {
+    const url = value.trim().replace(/^\/files(?=\/[^/])/, '');
+    if (url.endsWith('.unknown') || url.endsWith('/')) {
         return '';
     }
-    return /^\/(?!\/)/.test(url) || /^https?:\/\//i.test(url) ? url : '';
+    return /^\/[^/]/.test(url) || /^https?:\/\//i.test(url) ? url : '';
 }
 
 /** Objects, subscriptions and writes of one camera. */

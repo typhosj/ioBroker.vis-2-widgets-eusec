@@ -35,11 +35,7 @@ describe('DeviceLink', () => {
             [`${CHANNEL}.livestream`, `${CHANNEL}.picture_url`, ALIVE].sort(),
         );
         expect(events.calls).toEqual(
-            expect.arrayContaining([
-                'live:false',
-                'alive:true',
-                'picture:/files/eusec.0/T8010P00/last_event/T8410P00.jpg@7',
-            ]),
+            expect.arrayContaining(['live:false', 'alive:true', 'picture:/eusec.0/T8010P00/last_event/T8410P00.jpg@7']),
         );
     });
 
@@ -65,7 +61,7 @@ describe('DeviceLink', () => {
         events.calls.length = 0;
         socket.emit(`${CHANNEL}.picture_url`, url, true, 9);
         socket.emit(`${CHANNEL}.picture_url`, null);
-        expect(events.calls).toEqual([`picture:${url}@9`, 'picture:@0']);
+        expect(events.calls).toEqual(['picture:/eusec.0/T8010P00/last_event/T8410P00.jpg@9', 'picture:@0']);
     });
 
     it('returns null for a channel without start_stream', async () => {
@@ -161,17 +157,29 @@ describe('DeviceLink', () => {
 });
 
 describe('pictureUrl', () => {
-    it('keeps paths of the web server and http URLs', () => {
+    it('turns the admin path eusec writes into the path the web adapter serves', () => {
+        // eusec writes /files/eusec.0/...; web, which serves vis-2, answers that with 404 and
+        // serves the file under /eusec.0/...
         expect(pictureUrl('/files/eusec.0/T8010P00/last_event/T8410P00.jpg')).toBe(
-            '/files/eusec.0/T8010P00/last_event/T8410P00.jpg',
+            '/eusec.0/T8010P00/last_event/T8410P00.jpg',
         );
-        expect(pictureUrl('https://cam.example/x.jpg')).toBe('https://cam.example/x.jpg');
+        expect(pictureUrl(' /files/eusec.1/a.jpg ')).toBe('/eusec.1/a.jpg');
+    });
+
+    it('keeps other paths of the web server and http URLs', () => {
+        expect(pictureUrl('/eusec.0/T8010P00/last_event/T8410P00.jpg')).toBe(
+            '/eusec.0/T8010P00/last_event/T8410P00.jpg',
+        );
+        expect(pictureUrl('/filesystem/x.jpg')).toBe('/filesystem/x.jpg');
+        expect(pictureUrl('https://cam.example/files/x.jpg')).toBe('https://cam.example/files/x.jpg');
     });
 
     it('drops undecodable pictures, protocol-relative and script URLs', () => {
         for (const value of [
             '/files/eusec.0/T8010P00/last_event/T8410P00.unknown',
             '//evil.example/x.jpg',
+            '/files/',
+            '/',
             'javascript:alert(1)',
             '',
             42,
@@ -179,5 +187,9 @@ describe('pictureUrl', () => {
         ]) {
             expect(pictureUrl(value)).toBe('');
         }
+    });
+
+    it('never turns /files//host into a protocol-relative URL', () => {
+        expect(pictureUrl('/files//evil.example/x.jpg')).toBe('/files//evil.example/x.jpg');
     });
 });
