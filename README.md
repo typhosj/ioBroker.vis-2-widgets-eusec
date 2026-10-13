@@ -44,7 +44,6 @@ states are found from there.
   started, which also ends the picture on another display showing the same camera. With eusec 3.4
   and livestreams on demand this does not happen.
 - **Two popups at once** for two cameras stack, the newest on top.
-- **Languages:** English and German; other languages show English.
 
 ## Changelog
 
@@ -52,6 +51,10 @@ states are found from there.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (typhosj) The widgets are translated into all eleven languages of ioBroker
 
 ### 0.1.0 (2026-10-13)
 
