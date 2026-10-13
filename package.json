@@ -1,6 +1,6 @@
 {
   "name": "iobroker.vis2-eusec",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "vis-2 widgets for the cameras of the eusec adapter: live player, event popup and snapshot",
   "author": {
     "name": "typhosj",
