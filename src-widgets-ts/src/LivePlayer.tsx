@@ -247,6 +247,8 @@ export function LivePlayer(props: LivePlayerProps): React.JSX.Element {
                     // The origin comes from the livestream state. The page may run its player in its
                     // own origin, but neither navigate the vis page nor open popups.
                     sandbox="allow-scripts allow-same-origin"
+                    // Nothing in the player takes keys; Tab inside the frame would leave the page or dialog.
+                    tabIndex={-1}
                     style={fill}
                     onLoad={() => controllerRef.current?.iframeLoaded()}
                 />

@@ -71,6 +71,9 @@ describe('LivePlayer', () => {
         expect(container.querySelector('iframe')?.getAttribute('src')).toContain('stream.html?src=T8410P00&mode=mse');
         // go2rtc's page may run scripts in its own origin, but neither navigate the vis page nor open popups.
         expect(container.querySelector('iframe')?.getAttribute('sandbox')).toBe('allow-scripts allow-same-origin');
+        // Nothing in the player takes keys (controls=false); a Tab inside the cross-origin frame would
+        // leave the page or the dialog.
+        expect(container.querySelector('iframe')?.getAttribute('tabindex')).toBe('-1');
     });
 
     it('never starts a stream in the editor', async () => {

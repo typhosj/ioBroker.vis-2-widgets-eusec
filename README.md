@@ -55,6 +55,7 @@ states are found from there.
 ### **WORK IN PROGRESS**
 
 - (typhosj) The widgets are translated into all eleven languages of ioBroker
+- (typhosj) The keyboard focus stays inside the livestream dialog while it is open
 
 ### 0.1.0 (2026-10-13)
 

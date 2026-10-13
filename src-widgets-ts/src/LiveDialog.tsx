@@ -51,6 +51,9 @@ const closeButton: React.CSSProperties = {
 };
 const body: React.CSSProperties = { position: 'relative', flex: 1 };
 
+const TABBABLE =
+    'button:not([disabled]), [href], input:not([disabled]), select, textarea, iframe:not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])';
+
 /**
  * A full-screen (or sized) dialog above the whole vis page, closed by button, backdrop or Escape.
  *
@@ -60,17 +63,44 @@ const body: React.CSSProperties = { position: 'relative', flex: 1 };
 export function LiveDialog(props: LiveDialogProps): React.JSX.Element | null {
     const { open, onClose } = props;
     const closeRef = useRef<HTMLButtonElement>(null);
+    const dialogRef = useRef<HTMLDivElement>(null);
 
-    // The focus goes to the close button, so Enter and Escape act on the dialog, and back where it
-    // came from when the dialog closes.
-    // Known limit: no focus trap; Tab can still reach the page behind the backdrop.
+    // The focus goes to the close button, so Enter and Escape act on the dialog, stays inside the
+    // dialog while it is open, and goes back where it came from when the dialog closes.
     useEffect(() => {
         if (!open) {
             return undefined;
         }
         const previous = document.activeElement;
         closeRef.current?.focus();
+        // Tab wraps at both ends of the dialog.
+        const onTab = (event: KeyboardEvent): void => {
+            const dialog = dialogRef.current;
+            if (event.key !== 'Tab' || !dialog) {
+                return;
+            }
+            const items = [...dialog.querySelectorAll<HTMLElement>(TABBABLE)];
+            const first = items[0];
+            const last = items[items.length - 1];
+            if (event.shiftKey ? document.activeElement === first : document.activeElement === last) {
+                event.preventDefault();
+                (event.shiftKey ? last : first)?.focus();
+            }
+        };
+        // A Tab inside the cross-origin player iframe never reaches onTab and can hand the focus to
+        // the page. Focus in another open dialog (two popups at once) is left alone, or both would
+        // pull it back and forth.
+        const onFocusIn = (event: FocusEvent): void => {
+            const target = event.target;
+            if (target instanceof Element && !target.closest('[aria-modal="true"]')) {
+                closeRef.current?.focus();
+            }
+        };
+        document.addEventListener('keydown', onTab);
+        document.addEventListener('focusin', onFocusIn);
         return () => {
+            document.removeEventListener('keydown', onTab);
+            document.removeEventListener('focusin', onFocusIn);
             if (previous instanceof HTMLElement && previous.isConnected) {
                 previous.focus();
             }
@@ -98,6 +128,7 @@ export function LiveDialog(props: LiveDialogProps): React.JSX.Element | null {
     const look = props.look ?? DEFAULT_DIALOG_LOOK;
     return createPortal(
         <div
+            ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-label={props.title || t('live')}
