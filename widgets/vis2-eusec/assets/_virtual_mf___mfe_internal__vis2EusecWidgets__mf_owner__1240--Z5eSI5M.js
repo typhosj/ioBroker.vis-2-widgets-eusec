@@ -1,0 +1,1 @@
+import{r as e,t}from"./rolldown-runtime-QTnfLwEv.js";import{t as n}from"./react-dom-7mQYDUGL.js";var r=e(t((e=>{var t=n();e.createRoot=t.createRoot,e.hydrateRoot=t.hydrateRoot}))()),i=r,a=i.createRoot,o=i.hydrateRoot,s=Reflect.get(r,`default`)??r;export{a as createRoot,s as default,o as hydrateRoot};
