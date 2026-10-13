@@ -101,6 +101,31 @@ describe('SnapshotTile', () => {
         expect(document.activeElement).toBe(tile);
     });
 
+    it('opens on Enter and Space and consumes the key, so it does not click the close button', async () => {
+        // Opening moves the focus to the close button within the same key event. Without
+        // preventDefault() the browser's keypress (Enter) or keyup (Space) then activates that
+        // button and the dialog closes at once; jsdom does not activate buttons, so the test checks
+        // the key event itself.
+        const socket = fakeSocket({
+            objects: cameraObjects(['start_stream']),
+            states: { 'system.adapter.eusec.0.alive': stateOf(true) },
+            native: { livestreamOnDemand: true },
+        });
+        const container = await mount({}, socket);
+        const tile = container.querySelector('[role="button"]') as HTMLElement;
+        for (const key of ['Enter', ' ']) {
+            const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+            await settle(() => tile.dispatchEvent(event));
+            expect(event.defaultPrevented).toBe(true);
+            expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
+            await settle(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })));
+        }
+        const other = new KeyboardEvent('keydown', { key: 'a', bubbles: true, cancelable: true });
+        await settle(() => tile.dispatchEvent(other));
+        expect(other.defaultPrevented).toBe(false);
+        expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+    });
+
     it('does not open when tapping is switched off or in the editor', async () => {
         const off = await mount({ tapOpensLive: false });
         expect(off.querySelector('[role="button"]')).toBeNull();

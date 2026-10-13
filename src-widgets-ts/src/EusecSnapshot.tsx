@@ -124,7 +124,18 @@ export function SnapshotTile(props: SnapshotTileProps): React.JSX.Element {
                 tabIndex={canOpen ? 0 : undefined}
                 aria-label={canOpen ? t('live') : undefined}
                 onClick={canOpen ? () => setOpen(true) : undefined}
-                onKeyDown={canOpen ? event => (event.key === 'Enter' || event.key === ' ') && setOpen(true) : undefined}
+                onKeyDown={
+                    canOpen
+                        ? event => {
+                              if (event.key === 'Enter' || event.key === ' ') {
+                                  // The dialog moves the focus to its close button within this event;
+                                  // the key must not go on to activate that button.
+                                  event.preventDefault();
+                                  setOpen(true);
+                              }
+                          }
+                        : undefined
+                }
             >
                 {picture.url ? (
                     <img
