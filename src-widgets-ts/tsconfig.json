@@ -13,5 +13,5 @@
     "target": "es2022",
     "types": ["@iobroker/types-vis-2", "@iobroker/types", "node"]
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src", "vite.config.ts", "posixResolvedIds.ts", "posixResolvedIds.test.ts"]
 }

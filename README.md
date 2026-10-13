@@ -3,7 +3,8 @@
 # ioBroker.vis2-eusec
 
 Widgets for vis-2 that show the cameras of the [eusec](https://github.com/iobroker-community-adapters/ioBroker.eusec)
-adapter (eufy Security). Requires eusec 3.0.2 or later.
+adapter (eufy Security). Requires eusec 3.0.2 or later. The widgets load in vis-2 with React 18 as
+well as in vis-2 with React 19.
 
 **This project is not affiliated with Anker or eufy. eufy and eufy Security are trademarks of their
 respective owners and are used here only to name the cameras the widgets work with.**
