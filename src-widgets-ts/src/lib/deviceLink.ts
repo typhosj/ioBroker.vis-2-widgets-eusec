@@ -74,7 +74,12 @@ export class DeviceLink {
         const { channelId, instance } = this.device;
         const [objects, instanceObject, livestream] = await Promise.all([
             this.socket.getObjectView(`${channelId}.`, `${channelId}.香`, 'state'),
-            this.socket.getObject(`system.adapter.${instance}`),
+            // A vis user without read access to system.adapter.* gets an error here; the camera
+            // still plays, with the defaults of an unknown eusec version.
+            this.socket.getObject(`system.adapter.${instance}`).catch((error: unknown) => {
+                console.warn(`vis2-eusec: cannot read system.adapter.${instance}, using defaults: ${String(error)}`);
+                return null;
+            }),
             this.socket.getState(`${channelId}.livestream`),
         ]);
         const states = record(objects);

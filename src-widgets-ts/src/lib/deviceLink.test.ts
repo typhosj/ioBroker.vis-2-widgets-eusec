@@ -74,6 +74,33 @@ describe('DeviceLink', () => {
         expect(socket.handlers.size).toBe(0);
     });
 
+    it('falls back to the defaults when the instance object cannot be read', async () => {
+        // socket-client rejects getObject() with the server's error, e.g. for a vis user without
+        // read access to system.adapter.*. The camera is still there.
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const socket = fakeSocket({ objects: cameraObjects(['start_stream', 'pan_left']) });
+        socket.getObject = () => Promise.reject(new Error('permissionError'));
+        const caps = await new DeviceLink(socket, device, page, listener()).open();
+        expect(caps).toMatchObject({
+            onDemand: false,
+            playerEvents: false,
+            ptz: true,
+            streamName: 'T8410P00',
+            playerBaseUrl: 'http://192.168.178.106:1984',
+        });
+        expect(socket.handlers.size).toBe(3);
+        expect(warn).toHaveBeenCalledOnce();
+        warn.mockRestore();
+    });
+
+    it('still reports a camera that does not exist when the instance object cannot be read', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const socket = fakeSocket({ objects: cameraObjects(['picture_url']) });
+        socket.getObject = () => Promise.reject(new Error('permissionError'));
+        expect(await new DeviceLink(socket, device, page, listener()).open()).toBeNull();
+        warn.mockRestore();
+    });
+
     it('does not subscribe when closed before the objects arrived', async () => {
         const socket = fakeSocket({ objects: cameraObjects(['start_stream']) });
         let release: () => void = () => undefined;
