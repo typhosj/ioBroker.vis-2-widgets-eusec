@@ -67,7 +67,7 @@ All widgets and their settings stay as they are.
     ### **WORK IN PROGRESS**
 -->
 
-### **WORK IN PROGRESS**
+### 0.2.0 (2026-10-18)
 
 - (typhosj) Renamed from vis2-eusec to vis-2-widgets-eusec; views built with vis2-eusec need the new name once, see "Moving from vis2-eusec"
 

@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "vis-2-widgets-eusec",
-    "version": "0.1.1",
+    "version": "0.2.0",
     "news": {
+      "0.2.0": {
+        "en": "Renamed from vis2-eusec to vis-2-widgets-eusec\nViews built with vis2-eusec need the new name once, see the README",
+        "de": "Umbenannt von vis2-eusec in vis-2-widgets-eusec\nMit vis2-eusec erstellte Views brauchen einmalig den neuen Namen, siehe README",
+        "ru": "Переименован из vis2-eusec в vis-2-widgets-eusec\nВиды, созданные с vis2-eusec, однократно требуют нового имени, см. README",
+        "pt": "Renomeado de vis2-eusec para vis-2-widgets-eusec\nAs vistas criadas com vis2-eusec precisam do novo nome uma vez, consulte o README",
+        "nl": "Hernoemd van vis2-eusec naar vis-2-widgets-eusec\nViews die met vis2-eusec zijn gemaakt, hebben eenmalig de nieuwe naam nodig, zie de README",
+        "fr": "Renommé de vis2-eusec en vis-2-widgets-eusec\nLes vues créées avec vis2-eusec doivent recevoir le nouveau nom une fois, voir le README",
+        "it": "Rinominato da vis2-eusec a vis-2-widgets-eusec\nLe viste create con vis2-eusec richiedono una sola volta il nuovo nome, vedere il README",
+        "es": "Renombrado de vis2-eusec a vis-2-widgets-eusec\nLas vistas creadas con vis2-eusec necesitan el nuevo nombre una vez, consulte el README",
+        "pl": "Zmieniono nazwę z vis2-eusec na vis-2-widgets-eusec\nWidoki utworzone z vis2-eusec wymagają jednorazowo nowej nazwy, zobacz README",
+        "uk": "Перейменовано з vis2-eusec на vis-2-widgets-eusec\nВиди, створені з vis2-eusec, одноразово потребують нової назви, див. README",
+        "zh-cn": "已从 vis2-eusec 重命名为 vis-2-widgets-eusec\n使用 vis2-eusec 创建的视图需要一次性改用新名称，请参阅 README"
+      },
       "0.1.1": {
         "en": "The widgets are translated into all eleven languages of ioBroker\nThe keyboard focus stays inside the livestream dialog while it is open",
         "de": "Die Widgets sind in alle elf Sprachen von ioBroker übersetzt\nDer Tastaturfokus bleibt im Livestream-Dialog, solange er offen ist",
