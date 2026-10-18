@@ -17,7 +17,7 @@ assert.ok(Object.keys(io.common.news).length <= 7, 'common.news must contain at 
 assert.strictEqual(io.common.onlyWWW, true);
 
 const vite = fs.readFileSync(path.join(root, 'src-widgets-ts/vite.config.ts'), 'utf8');
-for (const component of io.common.visWidgets.vis2EusecWidgets.components) {
+for (const component of io.common.visWidgets.vis2WidgetsEusec.components) {
     assert.ok(vite.includes(`'./${component}'`), `${component} must be exposed in vite.config.ts`);
 }
 
@@ -84,7 +84,7 @@ const builtChunks = Object.fromEntries(
         .map(name => [name, fs.readFileSync(path.join(widgetDir, 'assets', name), 'utf8')]),
 );
 builtChunks['customWidgets.js'] = fs.readFileSync(path.join(widgetDir, 'customWidgets.js'), 'utf8');
-const components = io.common.visWidgets.vis2EusecWidgets.components;
+const components = io.common.visWidgets.vis2WidgetsEusec.components;
 const entries = Object.keys(builtChunks).filter(
     name => name === 'customWidgets.js' || components.some(component => name.startsWith(`${component}-`)),
 );

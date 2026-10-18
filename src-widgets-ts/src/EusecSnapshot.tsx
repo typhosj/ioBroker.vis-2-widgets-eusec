@@ -103,7 +103,9 @@ export function SnapshotTile(props: SnapshotTileProps): React.JSX.Element {
             setPicture({ url: pictureUrl(state?.val), changedAt: typeof state?.ts === 'number' ? state.ts : 0 });
         socket
             .subscribeState(pictureId, handler)
-            .catch((error: unknown) => console.warn(`vis2-eusec: cannot subscribe ${pictureId}: ${String(error)}`));
+            .catch((error: unknown) =>
+                console.warn(`vis-2-widgets-eusec: cannot subscribe ${pictureId}: ${String(error)}`),
+            );
         return () => socket.unsubscribeState(pictureId, handler);
     }, [socket, pictureId]);
 

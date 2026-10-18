@@ -1,6 +1,6 @@
-![Logo](admin/vis2-eusec.png)
+![Logo](admin/vis-2-widgets-eusec.png)
 
-# ioBroker.vis2-eusec
+# ioBroker.vis-2-widgets-eusec
 
 Widgets for vis-2 that show the cameras of the [eusec](https://github.com/iobroker-community-adapters/ioBroker.eusec)
 adapter (eufy Security). Requires eusec 3.0.2 or later. The widgets load in vis-2 with React 18 as
@@ -45,12 +45,31 @@ states are found from there.
   and livestreams on demand this does not happen.
 - **Two popups at once** for two cameras stack, the newest on top.
 
+## Moving from vis2-eusec
+
+Up to 0.1.1 this adapter was called `vis2-eusec`. ioBroker names widget adapters for vis-2
+`vis-2-widgets-<name>`, so it continues as `vis-2-widgets-eusec`. vis-2 stores the name of the
+widget set in every widget of a project, and the runtime only loads the sets named there. Views
+built with `vis2-eusec` therefore need the new name once:
+
+1. Install `vis-2-widgets-eusec` and delete the instance of `vis2-eusec`.
+2. In the admin, tab "Files", open `vis-2.0/<project>/` and download `vis-views.json`.
+3. Replace every `vis2-eusec` in the file with `vis-2-widgets-eusec` and upload it to the same
+   folder.
+4. Reload vis-2.
+
+All widgets and their settings stay as they are.
+
 ## Changelog
 
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (typhosj) Renamed from vis2-eusec to vis-2-widgets-eusec; views built with vis2-eusec need the new name once, see "Moving from vis2-eusec"
 
 ### 0.1.1 (2026-10-13)
 

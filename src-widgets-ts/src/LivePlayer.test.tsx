@@ -52,12 +52,12 @@ function camera302(): FakeSocket {
 describe('LivePlayer', () => {
     it('asks for a camera when none is selected', async () => {
         const container = await mount(player(fakeSocket(), { channelId: '' }));
-        expect(container.textContent).toContain('vis2_eusec_noDevice');
+        expect(container.textContent).toContain('vis_2_widgets_eusec_noDevice');
     });
 
     it('says so when the channel is no eusec camera', async () => {
         const container = await mount(player(fakeSocket({ objects: cameraObjects(['picture_url']) })));
-        expect(container.textContent).toContain('vis2_eusec_notFound');
+        expect(container.textContent).toContain('vis_2_widgets_eusec_notFound');
     });
 
     it('eusec 3.0.2: writes start_stream and sets the iframe once the livestream runs', async () => {
@@ -93,18 +93,18 @@ describe('LivePlayer', () => {
         const socket = fakeSocket({ objects: cameraObjects(['start_stream']), states: { [ALIVE]: stateOf(false) } });
         const container = await mount(player(socket));
         expect(socket.writes).toEqual([]);
-        expect(container.textContent).toContain('vis2_eusec_notRunning');
+        expect(container.textContent).toContain('vis_2_widgets_eusec_notRunning');
     });
 
     it('shows the pan and tilt controls only for a camera that has them', async () => {
         const plain = await mount(player(camera302(), { ptz: 'always' }));
-        expect(plain.querySelector('[aria-label="vis2_eusec_panLeft"]')).toBeNull();
+        expect(plain.querySelector('[aria-label="vis_2_widgets_eusec_panLeft"]')).toBeNull();
         const ptz = fakeSocket({
             objects: cameraObjects(['start_stream', 'pan_left', 'pan_right', 'tilt_up', 'tilt_down']),
             states: { [ALIVE]: stateOf(true) },
         });
         const withPtz = await mount(player(ptz, { ptz: 'always' }));
-        expect(withPtz.querySelector('[aria-label="vis2_eusec_panLeft"]')).not.toBeNull();
+        expect(withPtz.querySelector('[aria-label="vis_2_widgets_eusec_panLeft"]')).not.toBeNull();
     });
 });
 
@@ -112,7 +112,7 @@ describe('EusecLive', () => {
     it('declares its template ID and the device attribute', () => {
         const info = EusecLive.getWidgetInfo();
         expect(info.id).toBe('tplVis2EusecLive');
-        expect(info.visSet).toBe('vis2-eusec');
+        expect(info.visSet).toBe('vis-2-widgets-eusec');
         expect(info.visAttrs[0].fields.map(field => field.name)).toEqual([
             'device',
             'audio',
@@ -130,6 +130,6 @@ describe('EusecLive', () => {
         } as unknown as ConstructorParameters<typeof EusecLive>[0]);
         widget.state = { ...widget.state, rxData: { device: '' } } as unknown as typeof widget.state;
         const html = renderToStaticMarkup(widget.renderWidgetBody({} as Parameters<EusecLive['renderWidgetBody']>[0]));
-        expect(html).toContain('vis2_eusec_noDevice');
+        expect(html).toContain('vis_2_widgets_eusec_noDevice');
     });
 });

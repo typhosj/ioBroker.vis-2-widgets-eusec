@@ -13,7 +13,7 @@ export default {
         ...withPosixResolvedIds(
             federation({
                 manifest: true,
-                name: 'vis2EusecWidgets',
+                name: 'vis2WidgetsEusec',
                 filename: 'customWidgets.js',
                 exposes: {
                     './EusecLive': './src/EusecLive',

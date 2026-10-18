@@ -107,7 +107,9 @@ export function EventPopup(props: EventPopupProps): React.JSX.Element | null {
         for (const id of ids) {
             socket
                 .subscribeState(id, handler)
-                .catch((error: unknown) => console.warn(`vis2-eusec: cannot subscribe ${id}: ${String(error)}`));
+                .catch((error: unknown) =>
+                    console.warn(`vis-2-widgets-eusec: cannot subscribe ${id}: ${String(error)}`),
+                );
         }
         return () => {
             for (const id of ids) {

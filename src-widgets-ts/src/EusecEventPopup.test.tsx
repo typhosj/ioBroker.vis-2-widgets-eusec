@@ -94,7 +94,7 @@ describe('EventPopup', () => {
         const panel = backdrop.firstElementChild as HTMLElement;
         const header = panel.firstElementChild as HTMLElement;
         const title = header.firstElementChild as HTMLElement;
-        const close = document.body.querySelector('[aria-label="vis2_eusec_close"]') as HTMLElement;
+        const close = document.body.querySelector('[aria-label="vis_2_widgets_eusec_close"]') as HTMLElement;
         expect(backdrop.style.background).toBe('rgb(1, 2, 3)');
         expect(panel.style.background).toBe('rgb(36, 57, 73)');
         expect(panel.style.fontFamily).toBe('RobotoCondensed-Regular');
@@ -109,7 +109,7 @@ describe('EventPopup', () => {
         await mount(popup(socket));
         await settle(() => socket.emit(PERSON, true));
         await settle(() =>
-            (document.body.querySelector('[aria-label="vis2_eusec_close"]') as HTMLButtonElement).click(),
+            (document.body.querySelector('[aria-label="vis_2_widgets_eusec_close"]') as HTMLButtonElement).click(),
         );
         expect(dialog()).toBeNull();
     });
@@ -117,7 +117,7 @@ describe('EventPopup', () => {
     it('shows a marker in the editor and never subscribes there', async () => {
         const socket = camera();
         await mount(popup(socket, { editMode: true }));
-        expect(document.body.textContent).toContain('vis2_eusec_popupPlaceholder');
+        expect(document.body.textContent).toContain('vis_2_widgets_eusec_popupPlaceholder');
         expect(socket.handlers.size).toBe(0);
     });
 

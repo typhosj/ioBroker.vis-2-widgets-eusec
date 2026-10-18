@@ -79,7 +79,9 @@ export class DeviceLink {
             // A vis user without read access to system.adapter.* gets an error here; the camera
             // still plays, with the defaults of an unknown eusec version.
             this.socket.getObject(`system.adapter.${instance}`).catch((error: unknown) => {
-                console.warn(`vis2-eusec: cannot read system.adapter.${instance}, using defaults: ${String(error)}`);
+                console.warn(
+                    `vis-2-widgets-eusec: cannot read system.adapter.${instance}, using defaults: ${String(error)}`,
+                );
                 return null;
             }),
             this.socket.getState(`${channelId}.livestream`),
@@ -103,7 +105,9 @@ export class DeviceLink {
             this.subscribed.push(id);
             this.socket
                 .subscribeState(id, this.onState)
-                .catch((error: unknown) => console.warn(`vis2-eusec: cannot subscribe ${id}: ${String(error)}`));
+                .catch((error: unknown) =>
+                    console.warn(`vis-2-widgets-eusec: cannot subscribe ${id}: ${String(error)}`),
+                );
         }
         return caps;
     }
@@ -118,7 +122,7 @@ export class DeviceLink {
     write(name: string, val: ioBroker.StateValue): void {
         this.socket
             .setState(`${this.device.channelId}.${name}`, val, false)
-            .catch((error: unknown) => console.warn(`vis2-eusec: cannot write ${name}: ${String(error)}`));
+            .catch((error: unknown) => console.warn(`vis-2-widgets-eusec: cannot write ${name}: ${String(error)}`));
     }
 
     /** Drops the subscriptions; later changes are ignored. */

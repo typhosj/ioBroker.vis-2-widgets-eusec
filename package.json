@@ -1,12 +1,12 @@
 {
-  "name": "iobroker.vis2-eusec",
+  "name": "iobroker.vis-2-widgets-eusec",
   "version": "0.1.1",
   "description": "vis-2 widgets for the cameras of the eusec adapter: live player, event popup and snapshot",
   "author": {
     "name": "typhosj",
     "email": "typhosj@gmx.de"
   },
-  "homepage": "https://github.com/typhosj/ioBroker.vis2-eusec",
+  "homepage": "https://github.com/typhosj/ioBroker.vis-2-widgets-eusec",
   "license": "MIT",
   "engines": {
     "node": ">=22"
@@ -29,12 +29,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/typhosj/ioBroker.vis2-eusec.git"
+    "url": "git+https://github.com/typhosj/ioBroker.vis-2-widgets-eusec.git"
   },
   "bugs": {
-    "url": "https://github.com/typhosj/ioBroker.vis2-eusec/issues"
+    "url": "https://github.com/typhosj/ioBroker.vis-2-widgets-eusec/issues"
   },
-  "main": "widgets/vis2-eusec/customWidgets.js",
+  "main": "widgets/vis-2-widgets-eusec/customWidgets.js",
   "scripts": {
     "build": "node tasks",
     "lint": "eslint src-widgets-ts/src",

@@ -1,5 +1,5 @@
 /** Prefix of every key of this widget set in the shared vis-2 dictionary. */
-export const I18N_PREFIX = 'vis2_eusec_';
+export const I18N_PREFIX = 'vis_2_widgets_eusec_';
 
 /**
  * Translates a key of this widget set through vis-2, with `%s` placeholders filled in order.

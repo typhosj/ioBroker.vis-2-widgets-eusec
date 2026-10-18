@@ -71,7 +71,7 @@ describe('SnapshotTile', () => {
         });
         const container = await mount({}, socket);
         expect(container.querySelector('img')).toBeNull();
-        expect(container.textContent).toContain('vis2_eusec_noPicture');
+        expect(container.textContent).toContain('vis_2_widgets_eusec_noPicture');
     });
 
     it('opens the livestream on tap', async () => {
@@ -95,7 +95,7 @@ describe('SnapshotTile', () => {
         const tile = container.querySelector('[role="button"]') as HTMLElement;
         tile.focus();
         await settle(() => tile.click());
-        expect(document.activeElement?.getAttribute('aria-label')).toBe('vis2_eusec_close');
+        expect(document.activeElement?.getAttribute('aria-label')).toBe('vis_2_widgets_eusec_close');
         await settle(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })));
         expect(document.body.querySelector('[role="dialog"]')).toBeNull();
         expect(document.activeElement).toBe(tile);

@@ -43,7 +43,7 @@ export function createInfo(
 ): RxWidgetInfo {
     return {
         id,
-        visSet: 'vis2-eusec',
+        visSet: 'vis-2-widgets-eusec',
         visSetLabel: label('set'),
         visSetColor: '#0099d8',
         visName: id,

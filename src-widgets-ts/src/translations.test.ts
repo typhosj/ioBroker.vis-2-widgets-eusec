@@ -8,14 +8,14 @@ const placeholders = (text: string): number => text.split('%s').length - 1;
 
 // Texts that stay the same as in English on purpose: the brand, and words the language takes over.
 const SAME_AS_ENGLISH: Record<string, string[]> = {
-    de: ['vis2_eusec_group_dialog', 'vis2_eusec_live', 'vis2_eusec_set'],
+    de: ['vis_2_widgets_eusec_group_dialog', 'vis_2_widgets_eusec_live', 'vis_2_widgets_eusec_set'],
     nl: [
-        'vis2_eusec_device',
-        'vis2_eusec_live',
-        'vis2_eusec_set',
-        'vis2_eusec_trigger1',
-        'vis2_eusec_trigger2',
-        'vis2_eusec_trigger3',
+        'vis_2_widgets_eusec_device',
+        'vis_2_widgets_eusec_live',
+        'vis_2_widgets_eusec_set',
+        'vis_2_widgets_eusec_trigger1',
+        'vis_2_widgets_eusec_trigger2',
+        'vis_2_widgets_eusec_trigger3',
     ],
 };
 
@@ -44,13 +44,13 @@ describe('translations', () => {
             const same = Object.keys(english)
                 .filter(key => dictionaries[language][key] === english[key])
                 .sort();
-            expect(same, language).toEqual(SAME_AS_ENGLISH[language] ?? ['vis2_eusec_set']);
+            expect(same, language).toEqual(SAME_AS_ENGLISH[language] ?? ['vis_2_widgets_eusec_set']);
         }
     });
 
     it('uses the prefix of the widget set for every key', () => {
         for (const key of Object.keys(translations.en)) {
-            expect(key.startsWith('vis2_eusec_')).toBe(true);
+            expect(key.startsWith('vis_2_widgets_eusec_')).toBe(true);
         }
     });
 });

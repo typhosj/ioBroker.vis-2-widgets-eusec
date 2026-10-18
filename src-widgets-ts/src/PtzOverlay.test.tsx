@@ -64,7 +64,7 @@ afterEach(() => {
 describe('PtzOverlay', () => {
     it('moves once on press and repeats at the interval while held', () => {
         const { container, writes } = mount();
-        pointer(button(container, 'vis2_eusec_panLeft'), 'pointerdown');
+        pointer(button(container, 'vis_2_widgets_eusec_panLeft'), 'pointerdown');
         expect(writes).toEqual([{ name: 'pan_left', val: true }]);
         advance(REPEAT_MS * 3);
         expect(names(writes)).toEqual(['pan_left', 'pan_left', 'pan_left', 'pan_left']);
@@ -75,7 +75,7 @@ describe('PtzOverlay', () => {
         ['cancelling', 'pointercancel'],
     ])('stops repeating on %s the button', (_label, type) => {
         const { container, writes } = mount();
-        const tiltUp = button(container, 'vis2_eusec_tiltUp');
+        const tiltUp = button(container, 'vis_2_widgets_eusec_tiltUp');
         pointer(tiltUp, 'pointerdown');
         pointer(tiltUp, type);
         advance(REPEAT_MS * 4);
@@ -84,7 +84,7 @@ describe('PtzOverlay', () => {
 
     it('stops repeating when the pointer leaves the button', () => {
         const { container, writes } = mount();
-        const tiltDown = button(container, 'vis2_eusec_tiltDown');
+        const tiltDown = button(container, 'vis_2_widgets_eusec_tiltDown');
         pointer(tiltDown, 'pointerdown');
         // React derives onPointerLeave from pointerout with the element the pointer went to.
         pointer(tiltDown, 'pointerout', { relatedTarget: document.body });
@@ -94,7 +94,7 @@ describe('PtzOverlay', () => {
 
     it('runs one repeat at a time when pressed twice without a release', () => {
         const { container, writes } = mount();
-        const panRight = button(container, 'vis2_eusec_panRight');
+        const panRight = button(container, 'vis_2_widgets_eusec_panRight');
         pointer(panRight, 'pointerdown');
         pointer(panRight, 'pointerdown');
         advance(REPEAT_MS);
@@ -103,7 +103,7 @@ describe('PtzOverlay', () => {
 
     it('writes nothing after it unmounts while a button is held', () => {
         const { container, writes } = mount();
-        pointer(button(container, 'vis2_eusec_panLeft'), 'pointerdown');
+        pointer(button(container, 'vis_2_widgets_eusec_panLeft'), 'pointerdown');
         act(() => root?.unmount());
         root = null;
         advance(REPEAT_MS * 4);
@@ -112,7 +112,7 @@ describe('PtzOverlay', () => {
 
     it('moves once for a keyboard click and not again for the click after a press', () => {
         const { container, writes } = mount();
-        const panLeft = button(container, 'vis2_eusec_panLeft');
+        const panLeft = button(container, 'vis_2_widgets_eusec_panLeft');
         act(() => {
             panLeft.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 }));
         });
@@ -131,7 +131,7 @@ describe('PtzOverlay', () => {
                 { value: 3, label: 'Garden' },
             ],
         });
-        act(() => button(container, 'vis2_eusec_rotate').click());
+        act(() => button(container, 'vis_2_widgets_eusec_rotate').click());
         act(() => button(container, 'Garden').click());
         advance(REPEAT_MS * 4);
         expect(writes).toEqual([
@@ -160,8 +160,8 @@ describe('PtzOverlay', () => {
     it('on tap: stays visible while a button is held', () => {
         const { container } = mount({ mode: 'hover' });
         pointer(container.firstElementChild!, 'pointerdown');
-        pointer(button(container, 'vis2_eusec_panLeft'), 'pointerdown');
+        pointer(button(container, 'vis_2_widgets_eusec_panLeft'), 'pointerdown');
         advance(20_000);
-        expect(container.querySelector('[aria-label="vis2_eusec_panLeft"]')).not.toBeNull();
+        expect(container.querySelector('[aria-label="vis_2_widgets_eusec_panLeft"]')).not.toBeNull();
     });
 });

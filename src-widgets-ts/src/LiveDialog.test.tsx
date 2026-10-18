@@ -45,7 +45,7 @@ async function mount(open: boolean[]): Promise<void> {
 
 const byId = (id: string): HTMLElement => document.getElementById(id)!;
 const closeOf = (index: number): HTMLElement =>
-    document.querySelector(`[aria-label="dialog${index}"] [aria-label="vis2_eusec_close"]`)!;
+    document.querySelector(`[aria-label="dialog${index}"] [aria-label="vis_2_widgets_eusec_close"]`)!;
 
 function tab(shiftKey = false): KeyboardEvent {
     const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey, bubbles: true, cancelable: true });
