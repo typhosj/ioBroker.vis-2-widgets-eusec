@@ -15,32 +15,6 @@
         "pl": "Zmieniono nazwę z vis2-eusec na vis-2-widgets-eusec\nWidoki utworzone z vis2-eusec wymagają jednorazowo nowej nazwy, zobacz README",
         "uk": "Перейменовано з vis2-eusec на vis-2-widgets-eusec\nВиди, створені з vis2-eusec, одноразово потребують нової назви, див. README",
         "zh-cn": "已从 vis2-eusec 重命名为 vis-2-widgets-eusec\n使用 vis2-eusec 创建的视图需要一次性改用新名称，请参阅 README"
-      },
-      "0.1.1": {
-        "en": "The widgets are translated into all eleven languages of ioBroker\nThe keyboard focus stays inside the livestream dialog while it is open",
-        "de": "Die Widgets sind in alle elf Sprachen von ioBroker übersetzt\nDer Tastaturfokus bleibt im Livestream-Dialog, solange er offen ist",
-        "ru": "Виджеты переведены на все одиннадцать языков ioBroker\nФокус клавиатуры остаётся в окне прямой трансляции, пока оно открыто",
-        "pt": "Os widgets estão traduzidos para os onze idiomas do ioBroker\nO foco do teclado permanece na janela da transmissão ao vivo enquanto ela estiver aberta",
-        "nl": "De widgets zijn vertaald in alle elf talen van ioBroker\nDe toetsenbordfocus blijft in het livestreamvenster zolang het open is",
-        "fr": "Les widgets sont traduits dans les onze langues d'ioBroker\nLe focus du clavier reste dans la fenêtre du flux en direct tant qu'elle est ouverte",
-        "it": "I widget sono tradotti in tutte le undici lingue di ioBroker\nIl focus della tastiera resta nella finestra della diretta finché è aperta",
-        "es": "Los widgets están traducidos a los once idiomas de ioBroker\nEl foco del teclado permanece en la ventana de la transmisión en directo mientras está abierta",
-        "pl": "Widżety są przetłumaczone na wszystkie jedenaście języków ioBroker\nFokus klawiatury pozostaje w oknie transmisji na żywo, dopóki jest otwarte",
-        "uk": "Віджети перекладено всіма одинадцятьма мовами ioBroker\nФокус клавіатури залишається у вікні прямої трансляції, доки воно відкрите",
-        "zh-cn": "小部件已翻译为 ioBroker 的全部十一种语言\n直播对话框打开时，键盘焦点会保持在对话框内"
-      },
-      "0.1.0": {
-        "en": "Initial version: live player, event popup and snapshot widget",
-        "de": "Erste Version: Live-Player, Ereignis-Popup und Snapshot-Widget",
-        "ru": "Первая версия: виджеты живого просмотра, всплывающего окна событий и снимка",
-        "pt": "Versão inicial: widgets de reprodução ao vivo, pop-up de eventos e instantâneo",
-        "nl": "Eerste versie: widgets voor livebeeld, gebeurtenis-pop-up en momentopname",
-        "fr": "Version initiale : widgets de lecture en direct, de fenêtre d'événement et d'instantané",
-        "it": "Prima versione: widget di riproduzione live, popup degli eventi e istantanea",
-        "es": "Versión inicial: widgets de reproducción en directo, ventana de eventos e instantánea",
-        "pl": "Pierwsza wersja: widżety odtwarzania na żywo, okna zdarzeń i migawki",
-        "uk": "Перша версія: віджети живого перегляду, вікна подій і знімка",
-        "zh-cn": "初始版本：实时播放、事件弹窗和快照小部件"
       }
     },
     "titleLang": {

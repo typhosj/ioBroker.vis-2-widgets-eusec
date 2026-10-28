@@ -1,0 +1,7 @@
+# Auto-merge policy for Dependabot pull requests.
+# Consumed alongside .github/workflows/automerge-dependabot.yml.
+# Only patch and minor updates are auto-merged; major updates require manual review.
+# No dependency_type: the action only knows production/development/package-lock, and a rule
+# without it matches every type.
+- match:
+    update_type: "semver:minor"
