@@ -95,17 +95,18 @@ describe('SnapshotTile', () => {
         const tile = container.querySelector('[role="button"]') as HTMLElement;
         tile.focus();
         await settle(() => tile.click());
-        expect(document.activeElement?.getAttribute('aria-label')).toBe('vis_2_widgets_eusec_close');
+        expect(document.activeElement?.getAttribute('role')).toBe('dialog');
         await settle(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })));
         expect(document.body.querySelector('[role="dialog"]')).toBeNull();
         expect(document.activeElement).toBe(tile);
     });
 
     it('opens on Enter and Space and consumes the key, so it does not click the close button', async () => {
-        // Opening moves the focus to the close button within the same key event. Without
-        // preventDefault() the browser's keypress (Enter) or keyup (Space) then activates that
-        // button and the dialog closes at once; jsdom does not activate buttons, so the test checks
-        // the key event itself.
+        // Opening moves the focus into the dialog within the same key event. Without
+        // preventDefault() the browser's keypress (Enter) or keyup (Space) then acts on whatever got
+        // the focus there (it used to be the close button, which closed the dialog at once), and
+        // Space scrolls the page; jsdom does not activate buttons, so the test checks the key event
+        // itself.
         const socket = fakeSocket({
             objects: cameraObjects(['start_stream']),
             states: { 'system.adapter.eusec.0.alive': stateOf(true) },

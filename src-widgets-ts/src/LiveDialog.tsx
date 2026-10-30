@@ -65,15 +65,17 @@ export function LiveDialog(props: LiveDialogProps): React.JSX.Element | null {
     const closeRef = useRef<HTMLButtonElement>(null);
     const dialogRef = useRef<HTMLDivElement>(null);
 
-    // The focus goes to the close button, so Enter and Escape act on the dialog, stays inside the
-    // dialog while it is open, and goes back where it came from when the dialog closes.
+    // The focus goes to the dialog itself, so Escape acts on it, stays inside the dialog while it is
+    // open, and goes back where it came from when the dialog closes. Not to the close button: a
+    // popup opened by a trigger has no pointer input before it, and the browser then draws its focus
+    // ring around the button. Tab reaches the button, with the ring a keyboard user needs.
     useEffect(() => {
         if (!open) {
             return undefined;
         }
         const previous = document.activeElement;
-        closeRef.current?.focus();
-        // Tab wraps at both ends of the dialog.
+        dialogRef.current?.focus();
+        // Tab wraps at both ends of the dialog; Shift+Tab on the dialog itself counts as the start.
         const onTab = (event: KeyboardEvent): void => {
             const dialog = dialogRef.current;
             if (event.key !== 'Tab' || !dialog) {
@@ -82,7 +84,8 @@ export function LiveDialog(props: LiveDialogProps): React.JSX.Element | null {
             const items = [...dialog.querySelectorAll<HTMLElement>(TABBABLE)];
             const first = items[0];
             const last = items[items.length - 1];
-            if (event.shiftKey ? document.activeElement === first : document.activeElement === last) {
+            const atStart = document.activeElement === first || document.activeElement === dialog;
+            if (event.shiftKey ? atStart : document.activeElement === last) {
                 event.preventDefault();
                 (event.shiftKey ? last : first)?.focus();
             }
@@ -132,7 +135,8 @@ export function LiveDialog(props: LiveDialogProps): React.JSX.Element | null {
             role="dialog"
             aria-modal="true"
             aria-label={props.title || t('live')}
-            style={{ ...backdrop, background: look.overlayColor }}
+            tabIndex={-1}
+            style={{ ...backdrop, background: look.overlayColor, outline: 'none' }}
             onClick={onClose}
         >
             <div

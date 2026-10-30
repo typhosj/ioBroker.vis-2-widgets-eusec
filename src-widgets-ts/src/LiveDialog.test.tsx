@@ -44,6 +44,7 @@ async function mount(open: boolean[]): Promise<void> {
 }
 
 const byId = (id: string): HTMLElement => document.getElementById(id)!;
+const dialogOf = (index: number): HTMLElement => document.querySelector(`[aria-label="dialog${index}"]`)!;
 const closeOf = (index: number): HTMLElement =>
     document.querySelector(`[aria-label="dialog${index}"] [aria-label="vis_2_widgets_eusec_close"]`)!;
 
@@ -60,9 +61,48 @@ afterEach(() => {
 });
 
 describe('LiveDialog focus trap', () => {
+    it('focuses the dialog itself on open, not the close button', async () => {
+        // A popup opened by a trigger has no pointer input before it, so the browser drew its focus
+        // ring around a focused close button.
+        await mount([true]);
+        expect(document.activeElement).toBe(dialogOf(0));
+        expect(dialogOf(0).tabIndex).toBe(-1);
+        expect(dialogOf(0).style.outline).toBe('none');
+    });
+
+    it('lets Tab leave the dialog element for the close button and wraps Shift+Tab to the last', async () => {
+        await mount([true]);
+        // The browser moves forward to the first element by itself.
+        expect(tab().defaultPrevented).toBe(false);
+        const backward = tab(true);
+        expect(backward.defaultPrevented).toBe(true);
+        expect(document.activeElement).toBe(byId('inner0'));
+    });
+
+    it('wraps Shift+Tab from the dialog element to the close button when it is the only element', async () => {
+        const container = document.createElement('div');
+        document.body.appendChild(container);
+        root = createRoot(container);
+        await settle(() =>
+            root!.render(
+                <LiveDialog
+                    open
+                    title="dialog0"
+                    sizePercent={100}
+                    onClose={() => undefined}
+                >
+                    {null}
+                </LiveDialog>,
+            ),
+        );
+        expect(document.activeElement).toBe(dialogOf(0));
+        expect(tab(true).defaultPrevented).toBe(true);
+        expect(document.activeElement).toBe(closeOf(0));
+    });
+
     it('wraps Tab from the last element to the first and Shift+Tab back', async () => {
         await mount([true]);
-        expect(document.activeElement).toBe(closeOf(0));
+        await settle(() => closeOf(0).focus());
         // The browser moves the focus forward by itself; the trap steps in only at the ends.
         expect(tab().defaultPrevented).toBe(false);
         byId('inner0').focus();

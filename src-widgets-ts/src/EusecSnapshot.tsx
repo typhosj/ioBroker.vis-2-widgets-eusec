@@ -130,8 +130,8 @@ export function SnapshotTile(props: SnapshotTileProps): React.JSX.Element {
                     canOpen
                         ? event => {
                               if (event.key === 'Enter' || event.key === ' ') {
-                                  // The dialog moves the focus to its close button within this event;
-                                  // the key must not go on to activate that button.
+                                  // The dialog takes the focus within this event; the key must not go
+                                  // on to act on it, nor Space scroll the page.
                                   event.preventDefault();
                                   setOpen(true);
                               }
