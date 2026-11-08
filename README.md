@@ -70,6 +70,7 @@ All widgets and their settings stay as they are.
 ### **WORK IN PROGRESS**
 
 - (typhosj) The live view no longer opens with a focus ring around the close button; the dialog itself takes the focus, and Tab still reaches the button
+- (typhosj) The live view shows the last event picture uncropped while the stream loads, in the same framing as the video, instead of cutting it to fill the widget
 
 ### 0.2.0 (2026-10-18)
 

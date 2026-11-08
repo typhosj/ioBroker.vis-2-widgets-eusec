@@ -76,6 +76,24 @@ describe('LivePlayer', () => {
         expect(container.querySelector('iframe')?.getAttribute('tabindex')).toBe('-1');
     });
 
+    it('fits the waiting picture like the player fits the video, uncropped', async () => {
+        const socket = camera302();
+        socket.emit(`${CHANNEL}.picture_url`, '/files/eusec.0/T8010P00/last_event/T8410P00.jpg', true, 7);
+        const container = await mount(player(socket));
+        const picture = container.querySelector('img');
+        expect(picture?.getAttribute('src')).toContain('/last_event/T8410P00.jpg');
+        // go2rtc's player sizes the video to the frame, and a video keeps its aspect ratio inside it
+        // (contain). "cover" would show another part of the picture than the video that follows it.
+        expect(picture?.style.objectFit).toBe('contain');
+    });
+
+    it('shows no waiting picture when the camera has none yet', async () => {
+        const socket = camera302();
+        socket.emit(`${CHANNEL}.picture_url`, '', true, 7);
+        const container = await mount(player(socket));
+        expect(container.querySelector('img')).toBeNull();
+    });
+
     it('never starts a stream in the editor', async () => {
         const socket = camera302();
         await mount(player(socket, { active: false }));

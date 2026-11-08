@@ -257,7 +257,8 @@ export function LivePlayer(props: LivePlayerProps): React.JSX.Element {
                 <img
                     src={withVersion(picture.url, picture.changedAt)}
                     alt=""
-                    style={{ ...fill, objectFit: 'cover' }}
+                    // contain, like the video in go2rtc's player: the stream then starts on the same framing.
+                    style={{ ...fill, objectFit: 'contain' }}
                 />
             ) : null}
             {caps?.ptz && props.ptz !== 'never' && props.active ? (
