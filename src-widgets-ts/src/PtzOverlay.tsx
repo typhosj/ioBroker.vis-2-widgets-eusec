@@ -57,7 +57,8 @@ const button: React.CSSProperties = {
  * @returns The overlay
  */
 export function PtzOverlay(props: PtzOverlayProps): React.JSX.Element {
-    const [shown, setShown] = useState(props.mode === 'always');
+    // Only used on tap; the mode attribute may change while the widget is shown.
+    const [shown, setShown] = useState(false);
     const hideTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
     const repeatTimer = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
@@ -111,12 +112,18 @@ export function PtzOverlay(props: PtzOverlayProps): React.JSX.Element {
         </button>
     );
 
-    const once = (name: string, val: ioBroker.StateValue, content: string, ariaLabel: string): React.JSX.Element => (
+    const once = (
+        name: string,
+        val: ioBroker.StateValue,
+        content: string,
+        ariaLabel: string,
+        area?: string,
+    ): React.JSX.Element => (
         <button
             key={`${name}-${String(val)}`}
             type="button"
             aria-label={ariaLabel}
-            style={button}
+            style={area ? { ...button, gridArea: area } : button}
             onPointerDown={event => event.stopPropagation()}
             onClick={event => {
                 event.stopPropagation();
@@ -133,12 +140,12 @@ export function PtzOverlay(props: PtzOverlayProps): React.JSX.Element {
             style={layer}
             onPointerDown={keepShown}
         >
-            {shown ? (
+            {props.mode === 'always' || shown ? (
                 <>
                     <div style={pad}>
                         {move('tilt_up', '▲', 'tiltUp', '1 / 2')}
                         {move('pan_left', '◀', 'panLeft', '2 / 1')}
-                        {once('rotate_360', true, '⟳', t('rotate'))}
+                        {once('rotate_360', true, '⟳', t('rotate'), '2 / 2')}
                         {move('pan_right', '▶', 'panRight', '2 / 3')}
                         {move('tilt_down', '▼', 'tiltDown', '3 / 2')}
                     </div>

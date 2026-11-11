@@ -5,12 +5,19 @@ const UNITS: Array<[Intl.RelativeTimeFormatUnit, number]> = [
     ['second', 1000],
 ];
 
+const formatters = new Map<string, Intl.RelativeTimeFormat>();
+
 function formatter(language: string): Intl.RelativeTimeFormat {
-    try {
-        return new Intl.RelativeTimeFormat(language, { numeric: 'auto' });
-    } catch {
-        return new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+    let format = formatters.get(language);
+    if (!format) {
+        try {
+            format = new Intl.RelativeTimeFormat(language, { numeric: 'auto' });
+        } catch {
+            format = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+        }
+        formatters.set(language, format);
     }
+    return format;
 }
 
 /**
@@ -26,6 +33,10 @@ export function relativeTime(changedAt: number, now: number, language: string): 
         return '';
     }
     const age = Math.max(0, now - changedAt);
-    const [unit, size] = UNITS.find(([, ms]) => age >= ms) ?? ['second', 1000];
+    // A unit starts where the next smaller one would round up to it: 59.5 s is "1 minute", not "60 seconds".
+    const [unit, size] = UNITS.find(([, ms], index) => age >= ms - (UNITS[index + 1]?.[1] ?? ms) / 2) ?? [
+        'second',
+        1000,
+    ];
     return formatter(language).format(-Math.round(age / size), unit);
 }

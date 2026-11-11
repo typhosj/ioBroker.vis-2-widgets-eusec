@@ -4,7 +4,7 @@ import type VisRxWidget from '@iobroker/types-vis-2/visRxWidget';
 
 import { I18N_PREFIX, t } from './i18n';
 import { parseDeviceChannel } from './lib/device';
-import { type LinkSocket, pictureUrl } from './lib/deviceLink';
+import { type LinkSocket, pictureUrl, withVersion } from './lib/deviceLink';
 import { relativeTime } from './lib/relativeTime';
 import { LiveDialog } from './LiveDialog';
 import { LivePlayer } from './LivePlayer';
@@ -141,7 +141,7 @@ export function SnapshotTile(props: SnapshotTileProps): React.JSX.Element {
             >
                 {picture.url ? (
                     <img
-                        src={`${picture.url}${picture.url.includes('?') ? '&' : '?'}t=${picture.changedAt}`}
+                        src={withVersion(picture.url, picture.changedAt)}
                         alt=""
                         style={image}
                     />

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { CHANNEL, cameraObjects, fakeSocket, stateOf } from '../test/fakeSocket';
 import { parseDeviceChannel } from './device';
-import { DeviceLink, type DeviceListener, pictureUrl } from './deviceLink';
+import { DeviceLink, type DeviceListener, pictureUrl, withVersion } from './deviceLink';
 
 const device = parseDeviceChannel(CHANNEL)!;
 const page = { protocol: 'http:', hostname: '192.168.178.106' };
@@ -37,6 +37,40 @@ describe('DeviceLink', () => {
         expect(events.calls).toEqual(
             expect.arrayContaining(['live:false', 'alive:true', 'picture:/eusec.0/T8010P00/last_event/T8410P00.jpg@7']),
         );
+    });
+
+    it('reports livestream and alive before open() resolves, not only when the subscriptions answer', async () => {
+        const socket = fakeSocket({
+            objects: cameraObjects(['start_stream', 'livestream']),
+            states: { [ALIVE]: stateOf(false), [`${CHANNEL}.livestream`]: stateOf('http://h:1984/stream.html') },
+            slowSubscribe: true,
+        });
+        const events = listener();
+        await new DeviceLink(socket, device, page, events).open();
+        expect(events.calls).toEqual(['live:true', 'alive:false']);
+    });
+
+    it('reports a missing livestream as ended and leaves alive open when it cannot be read', async () => {
+        const socket = fakeSocket({ objects: cameraObjects(['start_stream']), slowSubscribe: true });
+        const getState = socket.getState;
+        socket.getState = id => (id === ALIVE ? Promise.reject(new Error('permissionError')) : getState(id));
+        const events = listener();
+        expect(await new DeviceLink(socket, device, page, events).open()).not.toBeNull();
+        expect(events.calls).toEqual(['live:false']);
+    });
+
+    it('reports nothing when closed before the values arrived', async () => {
+        const socket = fakeSocket({
+            objects: cameraObjects(['start_stream']),
+            states: { [`${CHANNEL}.livestream`]: stateOf('http://h:1984/stream.html') },
+            slowSubscribe: true,
+        });
+        const events = listener();
+        const link = new DeviceLink(socket, device, page, events);
+        const opening = link.open();
+        link.close();
+        expect(await opening).toBeNull();
+        expect(events.calls).toEqual([]);
     });
 
     it('reports a livestream URL as active and an emptied or deleted state as ended', async () => {
@@ -153,6 +187,13 @@ describe('DeviceLink', () => {
         await Promise.resolve();
         expect(warn).toHaveBeenCalledOnce();
         warn.mockRestore();
+    });
+});
+
+describe('withVersion', () => {
+    it('appends the write time as a new or an additional query parameter', () => {
+        expect(withVersion('/eusec.0/a.jpg', 7)).toBe('/eusec.0/a.jpg?t=7');
+        expect(withVersion('https://cam.example/a.jpg?size=1', 0)).toBe('https://cam.example/a.jpg?size=1&t=0');
     });
 });
 

@@ -64,6 +64,7 @@ export function LiveDialog(props: LiveDialogProps): React.JSX.Element | null {
     const { open, onClose } = props;
     const closeRef = useRef<HTMLButtonElement>(null);
     const dialogRef = useRef<HTMLDivElement>(null);
+    const pressedOnBackdrop = useRef(false);
 
     // The focus goes to the dialog itself, so Escape acts on it, stays inside the dialog while it is
     // open, and goes back where it came from when the dialog closes. Not to the close button: a
@@ -114,8 +115,15 @@ export function LiveDialog(props: LiveDialogProps): React.JSX.Element | null {
         if (!open) {
             return undefined;
         }
+        // Every open dialog listens, one Escape closes one of them: the one with the focus, else
+        // the newest, which createPortal appended last.
         const onKey = (event: KeyboardEvent): void => {
-            if (event.key === 'Escape') {
+            if (event.key !== 'Escape') {
+                return;
+            }
+            const dialogs = document.querySelectorAll('[aria-modal="true"]');
+            const focused = document.activeElement?.closest('[aria-modal="true"]');
+            if ((focused ?? dialogs[dialogs.length - 1]) === dialogRef.current) {
                 onClose();
             }
         };
@@ -137,12 +145,19 @@ export function LiveDialog(props: LiveDialogProps): React.JSX.Element | null {
             aria-label={props.title || t('live')}
             tabIndex={-1}
             style={{ ...backdrop, background: look.overlayColor, outline: 'none' }}
-            onClick={onClose}
+            // Only a click that also started on the backdrop: a press on a control in the panel
+            // released outside it clicks the backdrop too. Capture, as the pan and tilt buttons stop
+            // their pointerdown.
+            onPointerDownCapture={event => {
+                pressedOnBackdrop.current = event.target === event.currentTarget;
+            }}
+            onClick={event => {
+                if (event.target === event.currentTarget && pressedOnBackdrop.current) {
+                    onClose();
+                }
+            }}
         >
-            <div
-                style={{ ...panel, width: size, height: size, background: look.background, fontFamily: look.font }}
-                onClick={event => event.stopPropagation()}
-            >
+            <div style={{ ...panel, width: size, height: size, background: look.background, fontFamily: look.font }}>
                 <div style={{ ...header, background: look.headerBackground, fontSize: look.titleSizePx }}>
                     <span style={{ color: look.titleColor }}>{props.title}</span>
                     <button

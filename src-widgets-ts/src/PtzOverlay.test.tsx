@@ -140,6 +140,39 @@ describe('PtzOverlay', () => {
         ]);
     });
 
+    it('places every button in its own cell of the direction pad, the 360° button in the middle', () => {
+        const { container } = mount();
+        const area = (label: string): string => button(container, `vis_2_widgets_eusec_${label}`).style.gridArea;
+        expect(['tiltUp', 'panLeft', 'rotate', 'panRight', 'tiltDown'].map(area)).toEqual([
+            '1 / 2',
+            '2 / 1',
+            '2 / 2',
+            '2 / 3',
+            '3 / 2',
+        ]);
+    });
+
+    it('follows a change of the mode attribute while it is shown', () => {
+        const { container } = mount({ mode: 'hover' });
+        const render = (mode: PtzOverlayProps['mode']): void =>
+            act(() =>
+                root!.render(
+                    <PtzOverlay
+                        mode={mode}
+                        presets={[]}
+                        repeatMs={REPEAT_MS}
+                        write={() => undefined}
+                    />,
+                ),
+            );
+        render('always');
+        expect(container.querySelector('button')).not.toBeNull();
+        render('hover');
+        expect(container.querySelector('button')).toBeNull();
+        pointer(container.firstElementChild!, 'pointerdown');
+        expect(container.querySelector('button')).not.toBeNull();
+    });
+
     it('shows no preset row without presets', () => {
         const { container } = mount();
         expect(container.querySelectorAll('button')).toHaveLength(5);

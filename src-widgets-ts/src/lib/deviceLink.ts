@@ -8,7 +8,7 @@ export interface LinkSocket {
     getObjectView(start: string, end: string, type: 'state'): Promise<Record<string, unknown>>;
     /** Reads one state. */
     getState(id: string): Promise<unknown>;
-    /** Subscribes; calls the handler once with the current value. */
+    /** Subscribes; calls the handler once with the current value, after another round trip. */
     subscribeState(id: string, cb: ioBroker.StateChangeHandler): Promise<void>;
     /** Drops one subscription. */
     unsubscribeState(id: string, cb?: ioBroker.StateChangeHandler): void;
@@ -49,6 +49,18 @@ export function pictureUrl(value: unknown): string {
     return /^\/[^/]/.test(url) || /^https?:\/\//i.test(url) ? url : '';
 }
 
+/**
+ * Adds the picture's write time to its URL. eusec overwrites the same file for every event; the
+ * version makes the browser load the new one.
+ *
+ * @param url Result of pictureUrl()
+ * @param changedAt `ts` of `picture_url`
+ * @returns The URL for an img
+ */
+export function withVersion(url: string, changedAt: number): string {
+    return `${url}${url.includes('?') ? '&' : '?'}t=${changedAt}`;
+}
+
 /** Objects, subscriptions and writes of one camera. */
 export class DeviceLink {
     private closed = false;
@@ -74,7 +86,8 @@ export class DeviceLink {
      */
     async open(): Promise<Capabilities | null> {
         const { channelId, instance } = this.device;
-        const [objects, instanceObject, livestream] = await Promise.all([
+        const aliveId = `system.adapter.${instance}.alive`;
+        const [objects, instanceObject, livestream, alive] = await Promise.all([
             this.socket.getObjectView(`${channelId}.`, `${channelId}.香`, 'state'),
             // A vis user without read access to system.adapter.* gets an error here; the camera
             // still plays, with the defaults of an unknown eusec version.
@@ -85,6 +98,9 @@ export class DeviceLink {
                 return null;
             }),
             this.socket.getState(`${channelId}.livestream`),
+            // Unreadable like the instance object: the widget then assumes eusec runs until the
+            // subscription says otherwise.
+            this.socket.getState(aliveId).catch(() => undefined),
         ]);
         const states = record(objects);
         const stateIds = Object.keys(states);
@@ -101,7 +117,13 @@ export class DeviceLink {
             livestreamUrl: record(livestream).val,
             page: this.page,
         });
-        for (const id of [`${channelId}.livestream`, `${channelId}.picture_url`, `system.adapter.${instance}.alive`]) {
+        // The subscriptions report the current values only after another round trip, and a widget
+        // that starts its stream before it knows one already runs would later stop it for everyone.
+        this.onState(`${channelId}.livestream`, livestream);
+        if (alive !== undefined) {
+            this.onState(aliveId, alive);
+        }
+        for (const id of [`${channelId}.livestream`, `${channelId}.picture_url`, aliveId]) {
             this.subscribed.push(id);
             this.socket
                 .subscribeState(id, this.onState)
@@ -135,17 +157,18 @@ export class DeviceLink {
         }
     }
 
-    private readonly onState = (id: string, state: ioBroker.State | null | undefined): void => {
+    private readonly onState = (id: string, state: unknown): void => {
         if (this.closed) {
             return;
         }
         const { channelId, instance } = this.device;
+        const { val, ts } = record(state);
         if (id === `${channelId}.livestream`) {
-            this.listener.onLivestream(typeof state?.val === 'string' && state.val !== '');
+            this.listener.onLivestream(typeof val === 'string' && val !== '');
         } else if (id === `system.adapter.${instance}.alive`) {
-            this.listener.onAlive(state?.val === true);
+            this.listener.onAlive(val === true);
         } else if (id === `${channelId}.picture_url`) {
-            this.listener.onPicture(pictureUrl(state?.val), typeof state?.ts === 'number' ? state.ts : 0);
+            this.listener.onPicture(pictureUrl(val), typeof ts === 'number' ? ts : 0);
         }
     };
 }

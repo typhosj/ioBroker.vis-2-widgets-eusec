@@ -2,7 +2,12 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { EventPopup, type EventPopupProps, prefillTriggers } from './EusecEventPopup';
+import EusecEventPopup, {
+    EventPopup,
+    type EventPopupProps,
+    emptyOrPrefilled,
+    prefillTriggers,
+} from './EusecEventPopup';
 import { CHANNEL, type FakeSocket, cameraObjects, fakeSocket, stateOf } from './test/fakeSocket';
 import { settle } from './test/settle';
 import type { DialogLook } from './widgetInfo';
@@ -139,5 +144,57 @@ describe('prefillTriggers', () => {
 
     it('ignores an unusable channel', async () => {
         expect(await prefillTriggers('nothing_selected', () => Promise.resolve(true))).toBeNull();
+    });
+
+    it('asks for all default triggers at once and keeps their order', async () => {
+        const asked: string[] = [];
+        const answers: Array<() => void> = [];
+        const found = prefillTriggers(CHANNEL, id => {
+            asked.push(id);
+            return new Promise(resolve => answers.push(() => resolve(true)));
+        });
+        await Promise.resolve();
+        expect(asked).toEqual([`${CHANNEL}.ringing`, PERSON]);
+        answers.reverse().forEach(answer => answer());
+        expect(await found).toEqual([`${CHANNEL}.ringing`, PERSON]);
+    });
+});
+
+describe('emptyOrPrefilled', () => {
+    const OTHER = CHANNEL.replace(/T8410P00$/, 'T8410P01');
+
+    it('takes empty triggers and what the editor filled in for any camera', () => {
+        expect(emptyOrPrefilled([])).toBe(true);
+        expect(emptyOrPrefilled(['', ' ', 'nothing_selected', undefined, 42])).toBe(true);
+        expect(emptyOrPrefilled([`${OTHER}.ringing`, `${OTHER}.person_detected`, ''])).toBe(true);
+        expect(emptyOrPrefilled([` ${OTHER}.person_detected `, undefined, undefined])).toBe(true);
+    });
+
+    it('keeps triggers the user picked', () => {
+        expect(emptyOrPrefilled(['javascript.0.doorbell', '', ''])).toBe(false);
+        expect(emptyOrPrefilled([`${OTHER}.ringing`, `${OTHER}.person_detected`, 'javascript.0.doorbell'])).toBe(false);
+        // Order, gaps and a mix of cameras are no prefill.
+        expect(emptyOrPrefilled([`${OTHER}.person_detected`, `${OTHER}.ringing`, ''])).toBe(false);
+        expect(emptyOrPrefilled(['', `${OTHER}.ringing`, ''])).toBe(false);
+        expect(emptyOrPrefilled([`${OTHER}.ringing`, PERSON, ''])).toBe(false);
+        expect(emptyOrPrefilled([`${OTHER}.motion_detected`, '', ''])).toBe(false);
+        expect(emptyOrPrefilled(['eusec.0.station.ringing', '', ''])).toBe(false);
+    });
+
+    it('gives a newly chosen camera its own defaults in the editor', async () => {
+        const field = EusecEventPopup.getWidgetInfo()
+            .visAttrs.flatMap(group => group.fields)
+            .find(candidate => candidate.name === 'device')!;
+        const socket = fakeSocket({ objects: cameraObjects(['ringing', 'person_detected']) });
+        const changeData = vi.fn();
+        const onChange = 'onChange' in field ? (field.onChange as (...args: unknown[]) => Promise<void>) : undefined;
+        const change = (data: Record<string, unknown>): Promise<void> => onChange!(field, data, changeData, socket);
+        await change({ device: CHANNEL, trigger1: `${OTHER}.ringing`, trigger2: `${OTHER}.person_detected` });
+        expect(changeData).toHaveBeenCalledWith(
+            expect.objectContaining({ device: CHANNEL, trigger1: `${CHANNEL}.ringing`, trigger2: PERSON }),
+        );
+        changeData.mockClear();
+        await change({ device: CHANNEL, trigger1: 'javascript.0.doorbell' });
+        expect(changeData).not.toHaveBeenCalled();
     });
 });

@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from './i18n';
 import { LIMITS, clampNumber } from './lib/attrs';
 import { type Capabilities, parseDeviceChannel, playerSrc } from './lib/device';
-import { DeviceLink, type LinkSocket } from './lib/deviceLink';
+import { DeviceLink, type LinkSocket, withVersion } from './lib/deviceLink';
 import { readPlayerEvent } from './lib/playerMessage';
 import { StreamController, type StreamView } from './lib/streamControl';
 import { PtzOverlay } from './PtzOverlay';
@@ -86,11 +86,6 @@ function statusText(hasDevice: boolean, link: LinkState, view: StreamView): stri
     }
 }
 
-function withVersion(url: string, changedAt: number): string {
-    // eusec overwrites the same file for every event; the version makes the browser load the new one.
-    return `${url}${url.includes('?') ? '&' : '?'}t=${changedAt}`;
-}
-
 /**
  * The livestream of one camera, with snapshot placeholder, status line and pan and tilt controls.
  *
@@ -102,7 +97,9 @@ export function LivePlayer(props: LivePlayerProps): React.JSX.Element {
     const [link, setLink] = useState<LinkState>({ status: 'loading' });
     const [view, setView] = useState<StreamView>(IDLE_VIEW);
     const [picture, setPicture] = useState({ url: '', changedAt: 0 });
-    const [inView, setInView] = useState(true);
+    // Without IntersectionObserver (old WebView, jsdom) the widget counts as visible; with it, only
+    // once the observer said so - an off-screen widget must not start a stream meanwhile.
+    const [inView, setInView] = useState(() => typeof IntersectionObserver === 'undefined');
     const [pageVisible, setPageVisible] = useState(() => !document.hidden);
     const containerRef = useRef<HTMLDivElement>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -113,6 +110,9 @@ export function LivePlayer(props: LivePlayerProps): React.JSX.Element {
 
     useEffect(() => {
         setLink({ status: 'loading' });
+        // The values of the previous camera or instance; open() reports the new ones.
+        liveRef.current = false;
+        aliveRef.current = true;
         if (!device) {
             return undefined;
         }
@@ -198,7 +198,6 @@ export function LivePlayer(props: LivePlayerProps): React.JSX.Element {
 
     useEffect(() => {
         const element = containerRef.current;
-        // Without IntersectionObserver (old WebView, jsdom) the widget counts as visible.
         if (!element || typeof IntersectionObserver === 'undefined') {
             return undefined;
         }

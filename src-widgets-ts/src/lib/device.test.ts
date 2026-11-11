@@ -81,6 +81,17 @@ describe('detectCapabilities', () => {
         expect(caps.playerBaseUrl).toBe('http://iobroker.fritz.box:1985');
     });
 
+    it('reads the compatibility list like eusec: trimmed, any case, also as a comma-separated string', () => {
+        const streamName = (compatStreamDevices: unknown): string =>
+            detectCapabilities(input({ native: { ...native342, compatStreamDevices } })).streamName;
+        expect(streamName([' t8410p00 '])).toBe('T8410P00_compat');
+        expect(streamName('T8113N1234, t8410p00')).toBe('T8410P00_compat');
+        expect(streamName('')).toBe('T8410P00');
+        expect(streamName(['T8410P001', 'T8410P0', 42, null])).toBe('T8410P00');
+        expect(streamName({ T8410P00: true })).toBe('T8410P00');
+        expect(streamName(undefined)).toBe('T8410P00');
+    });
+
     it('marks player events by the key alone, also with on-demand switched off', () => {
         const caps = detectCapabilities(input({ native: { ...native342, livestreamOnDemand: false } }));
         expect(caps.onDemand).toBe(false);

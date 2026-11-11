@@ -11,6 +11,8 @@ export interface FakeSocket extends LinkSocket {
     writes: Array<{ id: string; val: ioBroker.StateValue; ack: boolean | undefined }>;
     /** Every first argument of unsubscribeState. */
     unsubscribed: unknown[];
+    /** With `slowSubscribe`: delivers the current values the subscriptions are still waiting for. */
+    answerSubscriptions(): void;
     /**
      * Sends a state change to the subscriber; null means the state was deleted. Like js-controller,
      * `lc` moves to `ts` only when the value changes.
@@ -56,26 +58,36 @@ export function cameraObjects(
 }
 
 /**
- * A socket like socket-client's: subscribeState() calls the handler once with the current value.
+ * A socket like socket-client's: subscribeState() calls the handler once with the current value,
+ * never synchronously. socket-client first asks the server for the value; `slowSubscribe` holds it
+ * back until answerSubscriptions(), so a test can let the widget run before the answer arrives.
  *
  * @param options Objects, states and instance config the socket answers with
  * @param options.objects State objects by ID
  * @param options.states States by ID
  * @param options.native `native` of every instance object
+ * @param options.slowSubscribe Hold the current values back until answerSubscriptions()
  * @returns The socket
  */
 export function fakeSocket(
-    options: { objects?: Record<string, unknown>; states?: Record<string, ioBroker.State>; native?: unknown } = {},
+    options: {
+        objects?: Record<string, unknown>;
+        states?: Record<string, ioBroker.State>;
+        native?: unknown;
+        slowSubscribe?: boolean;
+    } = {},
 ): FakeSocket {
     const objects = options.objects ?? {};
     const states = { ...options.states };
     const handlers = new Map<string, ioBroker.StateChangeHandler>();
     const writes: FakeSocket['writes'] = [];
     const unsubscribed: unknown[] = [];
+    const pending: Array<() => void> = [];
     return {
         handlers,
         writes,
         unsubscribed,
+        answerSubscriptions: () => pending.splice(0).forEach(answer => answer()),
         getObjectView: (start, end) =>
             Promise.resolve(Object.fromEntries(Object.entries(objects).filter(([id]) => id >= start && id <= end))),
         getObject: id =>
@@ -87,7 +99,16 @@ export function fakeSocket(
         getState: id => Promise.resolve(states[id] ?? null),
         subscribeState: (id, cb) => {
             handlers.set(id, cb);
-            void cb(id, states[id] ?? null);
+            const answer = (): void => {
+                if (handlers.get(id) === cb) {
+                    void cb(id, states[id] ?? null);
+                }
+            };
+            if (options.slowSubscribe) {
+                pending.push(answer);
+            } else {
+                queueMicrotask(answer);
+            }
             return Promise.resolve();
         },
         unsubscribeState: id => {

@@ -111,6 +111,18 @@ function validPort(value: unknown): number {
     return typeof port === 'number' && Number.isInteger(port) && port >= 1 && port <= 65535 ? port : DEFAULT_API_PORT;
 }
 
+/**
+ * Reads the list of devices with a compatibility stream the way eusec's parseSerialList() does:
+ * admin stores an array, older configs a comma-separated string; entries are trimmed and upper case.
+ *
+ * @param value `compatStreamDevices` of the instance config
+ * @returns The serials
+ */
+function serialList(value: unknown): string[] {
+    const items: unknown[] = Array.isArray(value) ? value : typeof value === 'string' ? value.split(',') : [];
+    return items.filter((item): item is string => typeof item === 'string').map(item => item.trim().toUpperCase());
+}
+
 function presetOptions(states: unknown): PresetOption[] {
     return Object.entries(record(states))
         .filter(([key]) => /^\d+$/.test(key))
@@ -135,7 +147,7 @@ export function detectCapabilities(input: CapabilityInput): Capabilities {
         : HOSTNAME.test(input.page.hostname)
           ? input.page.hostname
           : 'localhost';
-    const compat = Array.isArray(native.compatStreamDevices) && native.compatStreamDevices.includes(serial);
+    const compat = serialList(native.compatStreamDevices).includes(serial);
     const playerBaseUrl =
         httpOrigin(input.livestreamUrl) ??
         httpOrigin(`http://${host}:${validPort(native.go2rtc_api_port)}`) ??

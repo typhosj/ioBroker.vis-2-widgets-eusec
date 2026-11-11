@@ -69,14 +69,33 @@ export async function prefillTriggers(
     if (!device) {
         return null;
     }
-    const found: string[] = [];
-    for (const name of DEFAULT_TRIGGERS) {
-        const id = `${device.channelId}.${name}`;
-        if (await exists(id)) {
-            found.push(id);
-        }
+    const ids = DEFAULT_TRIGGERS.map(name => `${device.channelId}.${name}`);
+    const found = await Promise.all(ids.map(exists));
+    return ids.filter((_id, index) => found[index]);
+}
+
+/**
+ * Whether the trigger attributes may take the defaults of a newly chosen camera: they are empty, or
+ * hold exactly what prefillTriggers() filled in for a camera chosen before. Triggers the user picked
+ * stay.
+ *
+ * @param triggers Values of the trigger attributes, in order
+ * @returns True when they are empty or a prefill
+ */
+export function emptyOrPrefilled(triggers: readonly unknown[]): boolean {
+    const values = triggers.map(value => validTriggers([value])[0] ?? '');
+    const used = values.filter(value => value !== '');
+    if (!used.length) {
+        return true;
     }
-    return found;
+    const channelId = used[0].slice(0, used[0].lastIndexOf('.'));
+    const prefill = DEFAULT_TRIGGERS.map(name => `${channelId}.${name}`).filter(id => used.includes(id));
+    // prefillTriggers() fills the first attributes in the order of DEFAULT_TRIGGERS.
+    return (
+        parseDeviceChannel(channelId) !== null &&
+        prefill.length === used.length &&
+        prefill.every((id, index) => values[index] === id)
+    );
 }
 
 /**
@@ -161,7 +180,7 @@ const triggerField = (index: number): RxWidgetInfoAttributesField => ({
 const deviceWithPrefill: RxWidgetInfoAttributesField = {
     ...deviceField,
     onChange: async (_field, data, changeData, socket) => {
-        if (validTriggers([data.trigger1, data.trigger2, data.trigger3]).length) {
+        if (!emptyOrPrefilled([data.trigger1, data.trigger2, data.trigger3])) {
             return;
         }
         const found = await prefillTriggers(data.device, async id => !!(await socket.getObject(id)));

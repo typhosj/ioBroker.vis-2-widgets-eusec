@@ -1,7 +1,7 @@
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import EusecLive from './EusecLive';
 import { LivePlayer, type LivePlayerProps } from './LivePlayer';
@@ -105,6 +105,83 @@ describe('LivePlayer', () => {
         await mount(player(socket));
         mounted.splice(0).forEach(unmount => unmount());
         expect(socket.writes.map(write => write.id)).toEqual([`${CHANNEL}.start_stream`, `${CHANNEL}.stop_stream`]);
+    });
+
+    it('neither starts nor stops a stream another display runs, also when the socket answers late', async () => {
+        // socket-client reports the current value of a subscription only after another round trip,
+        // when the widget has long decided whether to write start_stream.
+        const url = 'http://192.168.178.106:1984/stream.html?src=T8410P00';
+        const socket = fakeSocket({
+            objects: cameraObjects(['start_stream', 'stop_stream', 'livestream']),
+            states: { [ALIVE]: stateOf(true), [`${CHANNEL}.livestream`]: stateOf(url) },
+            native: { hostname: '', go2rtc_api_port: 1984 },
+            slowSubscribe: true,
+        });
+        const container = await mount(player(socket));
+        expect(container.querySelector('iframe')?.getAttribute('src')).toContain('stream.html?src=T8410P00');
+        await settle(() => socket.answerSubscriptions());
+        mounted.splice(0).forEach(unmount => unmount());
+        expect(socket.writes).toEqual([]);
+    });
+
+    it('does not start while eusec is not running, also when the socket answers late', async () => {
+        const socket = fakeSocket({
+            objects: cameraObjects(['start_stream']),
+            states: { [ALIVE]: stateOf(false) },
+            slowSubscribe: true,
+        });
+        const container = await mount(player(socket));
+        expect(socket.writes).toEqual([]);
+        expect(container.textContent).toContain('vis_2_widgets_eusec_notRunning');
+    });
+
+    it('starts the new camera when the device changes from one that was streaming', async () => {
+        const other = CHANNEL.replace(/T8410P00$/, 'T8410P01');
+        const objects = cameraObjects(['start_stream', 'stop_stream']);
+        const socket = fakeSocket({
+            objects: {
+                ...objects,
+                ...Object.fromEntries(Object.entries(objects).map(([id, obj]) => [id.replace(CHANNEL, other), obj])),
+            },
+            states: {
+                [ALIVE]: stateOf(true),
+                [`${CHANNEL}.livestream`]: stateOf('http://192.168.178.106:1984/stream.html?src=T8410P00'),
+            },
+            slowSubscribe: true,
+        });
+        const container = document.createElement('div');
+        document.body.appendChild(container);
+        const root = createRoot(container);
+        mounted.push(() => act(() => root.unmount()));
+        await settle(() => root.render(player(socket)));
+        await settle(() => socket.answerSubscriptions());
+        await settle(() => root.render(player(socket, { channelId: other })));
+        await settle(() => socket.answerSubscriptions());
+        expect(socket.writes.map(write => write.id)).toEqual([`${other}.start_stream`]);
+        expect(container.textContent).not.toContain('vis_2_widgets_eusec_ended');
+    });
+
+    it('starts no stream before the observer reports the widget on screen', async () => {
+        let report: (visible: boolean) => void = () => undefined;
+        vi.stubGlobal(
+            'IntersectionObserver',
+            class {
+                constructor(callback: (entries: Array<{ isIntersecting: boolean }>) => void) {
+                    report = visible => callback([{ isIntersecting: visible }]);
+                }
+                observe(): void {}
+                disconnect(): void {}
+            },
+        );
+        try {
+            const socket = camera302();
+            await mount(player(socket));
+            expect(socket.writes).toEqual([]);
+            await settle(() => report(true));
+            expect(socket.writes.map(write => write.id)).toEqual([`${CHANNEL}.start_stream`]);
+        } finally {
+            vi.unstubAllGlobals();
+        }
     });
 
     it('does not start while eusec is not running', async () => {

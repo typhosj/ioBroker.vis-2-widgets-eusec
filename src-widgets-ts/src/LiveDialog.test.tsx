@@ -1,6 +1,6 @@
 import React, { act } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { LiveDialog } from './LiveDialog';
 import { settle } from './test/settle';
@@ -135,5 +135,97 @@ describe('LiveDialog focus trap', () => {
         await settle(() => byId('behind').focus());
         expect(document.activeElement).toBe(byId('behind'));
         expect(tab().defaultPrevented).toBe(false);
+    });
+});
+
+describe('LiveDialog closing', () => {
+    async function mountTwo(): Promise<Array<ReturnType<typeof vi.fn>>> {
+        const closes = [vi.fn(), vi.fn()];
+        const container = document.createElement('div');
+        document.body.appendChild(container);
+        root = createRoot(container);
+        await settle(() =>
+            root!.render(
+                <>
+                    {closes.map((onClose, index) => (
+                        <LiveDialog
+                            key={index}
+                            open
+                            title={`dialog${index}`}
+                            sizePercent={50}
+                            onClose={onClose}
+                        >
+                            <button
+                                type="button"
+                                id={`inner${index}`}
+                            >
+                                inner
+                            </button>
+                        </LiveDialog>
+                    ))}
+                </>,
+            ),
+        );
+        return closes;
+    }
+
+    function escape(): void {
+        act(() => {
+            (document.activeElement ?? document.body).dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+            );
+        });
+    }
+
+    it('closes only the dialog with the focus on Escape, not every open one', async () => {
+        const [first, second] = await mountTwo();
+        expect(document.activeElement).toBe(dialogOf(1));
+        escape();
+        expect(second).toHaveBeenCalledOnce();
+        expect(first).not.toHaveBeenCalled();
+        await settle(() => byId('inner0').focus());
+        escape();
+        expect(first).toHaveBeenCalledOnce();
+        expect(second).toHaveBeenCalledOnce();
+    });
+
+    it('closes the newest dialog on Escape when the focus is in none of them', async () => {
+        const [first, second] = await mountTwo();
+        act(() => (document.activeElement as HTMLElement).blur());
+        expect(document.activeElement).toBe(document.body);
+        escape();
+        expect(second).toHaveBeenCalledOnce();
+        expect(first).not.toHaveBeenCalled();
+    });
+
+    function press(down: Element, up: Element): void {
+        act(() => {
+            down.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+            up.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        });
+    }
+
+    it('closes on a click on the backdrop, not on one inside the panel', async () => {
+        const [first] = await mountTwo();
+        press(byId('inner0'), byId('inner0'));
+        press(byId('inner0').parentElement!, byId('inner0').parentElement!);
+        expect(first).not.toHaveBeenCalled();
+        press(dialogOf(0), dialogOf(0));
+        expect(first).toHaveBeenCalledOnce();
+    });
+
+    it('stays open when a press inside the panel is released over the backdrop', async () => {
+        // The browser sends the click to the common ancestor of press and release: the backdrop.
+        const [first] = await mountTwo();
+        press(byId('inner0'), dialogOf(0));
+        expect(first).not.toHaveBeenCalled();
+    });
+
+    it('stays open when the pressed control stops the pointerdown, as the pan and tilt buttons do', async () => {
+        const [first] = await mountTwo();
+        press(dialogOf(0), byId('inner0'));
+        byId('inner0').addEventListener('pointerdown', event => event.stopPropagation());
+        press(byId('inner0'), dialogOf(0));
+        expect(first).not.toHaveBeenCalled();
     });
 });

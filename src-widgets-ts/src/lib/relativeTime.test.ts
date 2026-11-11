@@ -12,6 +12,17 @@ describe('relativeTime', () => {
         expect(relativeTime(NOW - 24 * 3_600_000, NOW, 'en')).toBe('yesterday');
     });
 
+    it('moves to the next unit where the count would round up to it', () => {
+        expect(relativeTime(NOW - 59_499, NOW, 'en')).toBe('59 seconds ago');
+        expect(relativeTime(NOW - 59_500, NOW, 'en')).toBe('1 minute ago');
+        expect(relativeTime(NOW - 59 * 60_000 - 29_999, NOW, 'en')).toBe('59 minutes ago');
+        expect(relativeTime(NOW - 59 * 60_000 - 30_000, NOW, 'en')).toBe('1 hour ago');
+        expect(relativeTime(NOW - 23 * 3_600_000 - 1_799_999, NOW, 'en')).toBe('23 hours ago');
+        expect(relativeTime(NOW - 23 * 3_600_000 - 1_800_000, NOW, 'en')).toBe('yesterday');
+        expect(relativeTime(NOW - 499, NOW, 'en')).toBe('now');
+        expect(relativeTime(NOW - 500, NOW, 'en')).toBe('1 second ago');
+    });
+
     it('speaks German', () => {
         expect(relativeTime(NOW - 3 * 60_000, NOW, 'de')).toBe('vor 3 Minuten');
     });
