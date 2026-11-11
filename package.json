@@ -37,8 +37,8 @@
   "main": "widgets/vis-2-widgets-eusec/customWidgets.js",
   "scripts": {
     "build": "node tasks",
-    "lint": "eslint src-widgets-ts/src",
-    "typecheck": "tsc -p src-widgets-ts/tsconfig.json --noEmit",
+    "lint": "eslint src-widgets-ts/src test",
+    "typecheck": "tsc -p src-widgets-ts/tsconfig.json --noEmit && tsc -p test/tsconfig.json --noEmit",
     "test:package": "mocha test/package.js --exit",
     "test:package-custom": "node test/package-custom.js",
     "test:widgets": "vitest run",

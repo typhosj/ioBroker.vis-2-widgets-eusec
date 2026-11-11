@@ -71,10 +71,15 @@ jobs:
       - run: npm ci
       # The build installs the widget tree, which holds the plugins vite.config.ts imports.
       - run: npm run build
-      - run: npx tsc -p src-widgets-ts/tsconfig.json --noEmit
+      - run: npm run typecheck
       - name: committed build output must match the sources
         run: |
-          git diff --exit-code -- widgets || { echo "::error::committed build output is stale - run 'npm run build' and commit the result"; exit 1; }
+          # status, not diff: a newly emitted chunk is an untracked file, which diff does not see.
+          if [ -n "$(git status --porcelain -- widgets)" ]; then
+            git status --short -- widgets
+            echo "::error::committed build output is stale - run 'npm run build' and commit the result"
+            exit 1
+          fi
 
   deploy:
     needs: [check-and-lint, adapter-tests, widgets-react-19, build-is-current]

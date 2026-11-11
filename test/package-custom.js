@@ -26,7 +26,8 @@ for (const component of io.common.visWidgets.vis2WidgetsEusec.components) {
 // internals are gone, so a fallback that is evaluated before the share scope is asked crashes the
 // whole widget set (ioBroker.vis-2#689). A fallback may therefore never be in the static import
 // closure of the remote entry or of an exposed widget; a loader chunk that is itself only reached
-// through import() may import it statically.
+// through import() may import it statically. A static import of a chunk the check cannot read is
+// reported too: whatever that chunk imports would go unchecked.
 function eagerFallbacks(chunks, entries) {
     const isFallback = code =>
         code.includes('__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactCurrentOwner') ||
@@ -37,10 +38,14 @@ function eagerFallbacks(chunks, entries) {
         const stack = [entry];
         while (stack.length) {
             const name = stack.pop();
-            if (seen.has(name) || chunks[name] === undefined) {
+            if (seen.has(name)) {
                 continue;
             }
             seen.add(name);
+            if (chunks[name] === undefined) {
+                offenders.push(`${entry} -> ${name} (not found)`);
+                continue;
+            }
             if (isFallback(chunks[name])) {
                 offenders.push(`${entry} -> ${name}`);
             }
@@ -72,9 +77,14 @@ assert.deepStrictEqual(
     ),
     [],
 );
-// Import cycles end, missing chunks and an empty bundle pass.
+// Import cycles end and an empty bundle passes; a missing chunk fails.
 assert.deepStrictEqual(eagerFallbacks({ 'a.js': 'import"./b.js";', 'b.js': 'import"./a.js";' }, ['a.js']), []);
-assert.deepStrictEqual(eagerFallbacks({ 'widget.js': 'import"./gone.js";' }, ['widget.js']), []);
+assert.deepStrictEqual(eagerFallbacks({ 'widget.js': 'import"./gone.js";' }, ['widget.js']), [
+    'widget.js -> gone.js (not found)',
+]);
+assert.deepStrictEqual(eagerFallbacks({ 'widget.js': 'import"./assets/sub/a.js";' }, ['widget.js']), [
+    'widget.js -> sub/a.js (not found)',
+]);
 assert.deepStrictEqual(eagerFallbacks({}, []), []);
 const widgetDir = path.join(root, 'widgets', io.common.name);
 const builtChunks = Object.fromEntries(
@@ -84,15 +94,13 @@ const builtChunks = Object.fromEntries(
         .map(name => [name, fs.readFileSync(path.join(widgetDir, 'assets', name), 'utf8')]),
 );
 builtChunks['customWidgets.js'] = fs.readFileSync(path.join(widgetDir, 'customWidgets.js'), 'utf8');
-const components = io.common.visWidgets.vis2WidgetsEusec.components;
+// vis-2 loads ./translations (i18n: "component") before any widget.
+const exposed = [...io.common.visWidgets.vis2WidgetsEusec.components, 'translations'];
+assert.ok(vite.includes(`'./translations'`), 'translations must be exposed in vite.config.ts');
 const entries = Object.keys(builtChunks).filter(
-    name => name === 'customWidgets.js' || components.some(component => name.startsWith(`${component}-`)),
+    name => name === 'customWidgets.js' || exposed.some(module => name.startsWith(`${module}-`)),
 );
-assert.strictEqual(
-    entries.length,
-    components.length + 1,
-    'a chunk of every exposed widget must exist - run npm run build',
-);
+assert.strictEqual(entries.length, exposed.length + 1, 'a chunk of every exposed module must exist - run npm run build');
 assert.deepStrictEqual(
     eagerFallbacks(builtChunks, entries),
     [],

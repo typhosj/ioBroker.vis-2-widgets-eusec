@@ -1,0 +1,4 @@
+{
+  "extends": "../src-widgets-ts/tsconfig.json",
+  "include": ["widgets.setup.ts"]
+}

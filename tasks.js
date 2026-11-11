@@ -1,4 +1,4 @@
-const { cpSync, existsSync, mkdirSync, rmSync } = require('node:fs');
+const { cpSync, existsSync, mkdirSync, rmSync, statSync } = require('node:fs');
 const { execFileSync } = require('node:child_process');
 
 const adapterName = require('./package.json').name.replace('iobroker.', '');
@@ -12,10 +12,14 @@ const npm = (args, cwd) => execFileSync('npm', args, { cwd, shell: true, stdio: 
 rmSync(`${srcTs}build`, { recursive: true, force: true });
 rmSync(widgetTarget, { recursive: true, force: true });
 
-if (!existsSync(`${srcTs}node_modules`)) {
-    // `ci`, not `install`: the bundle is committed, and `install` may resolve newer patch versions
-    // than the lockfile pins, so a cold machine would build different bytes from the same commit.
-    npm([existsSync(`${srcTs}package-lock.json`) ? 'ci' : 'install'], srcTs);
+// `ci`, not `install`: the bundle is committed, and `install` may resolve newer patch versions
+// than the lockfile pins, so a cold machine would build different bytes from the same commit.
+// Again whenever the lockfile is newer than the installed tree (a merged Dependabot bump): npm
+// writes node_modules/.package-lock.json at the end of every install.
+const installed = `${srcTs}node_modules/.package-lock.json`;
+const lockfile = `${srcTs}package-lock.json`;
+if (!existsSync(installed) || (existsSync(lockfile) && statSync(lockfile).mtimeMs > statSync(installed).mtimeMs)) {
+    npm([existsSync(lockfile) ? 'ci' : 'install'], srcTs);
 }
 npm(['run', 'build'], srcTs);
 
