@@ -5,7 +5,7 @@ import type VisRxWidget from '@iobroker/types-vis-2/visRxWidget';
 import { I18N_PREFIX, t } from './i18n';
 import { LIMITS, clampNumber } from './lib/attrs';
 import { parseDeviceChannel } from './lib/device';
-import type { LinkSocket } from './lib/deviceLink';
+import { type LinkSocket, subscribeStates } from './lib/deviceLink';
 import { AutoClose, DEFAULT_TRIGGERS, TriggerWatcher, validTriggers } from './lib/trigger';
 import { LiveDialog } from './LiveDialog';
 import { LivePlayer } from './LivePlayer';
@@ -121,19 +121,16 @@ export function EventPopup(props: EventPopupProps): React.JSX.Element | null {
         autoCloseRef.current = autoClose;
         // A trigger that turned true while another view was shown still opens, as long as it is recent.
         const watcher = new TriggerWatcher(() => autoClose.fire(), closeAfterMs);
-        // socket-client calls the handler once with the current value - the watcher's baseline.
-        const handler: ioBroker.StateChangeHandler = (id, state) => watcher.update(id, state);
-        for (const id of ids) {
-            socket
-                .subscribeState(id, handler)
-                .catch((error: unknown) =>
-                    console.warn(`vis-2-widgets-eusec: cannot subscribe ${id}: ${String(error)}`),
-                );
-        }
+        // socket-client calls the handler once with the current value - the watcher's baseline. After a
+        // reconnect the values are read again with the same rule as at the start.
+        const unsubscribe = subscribeStates(
+            socket,
+            ids,
+            (id, state) => watcher.update(id, state),
+            () => watcher.reset(),
+        );
         return () => {
-            for (const id of ids) {
-                socket.unsubscribeState(id, handler);
-            }
+            unsubscribe();
             autoClose.dispose();
             autoCloseRef.current = null;
             setOpen(false);

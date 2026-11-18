@@ -131,6 +131,96 @@ describe('EventPopup', () => {
         await mount(popup(socket));
         mounted.splice(0).forEach(unmount => unmount());
         expect(socket.unsubscribed).toContain(PERSON);
+        expect(socket.connectionHandlers.size).toBe(0);
+    });
+});
+
+describe('EventPopup after a lost connection', () => {
+    // socket-client renews the subscriptions after a reconnect but sends no current value.
+
+    it('opens for a trigger that turned true while the page was offline', async () => {
+        const socket = camera();
+        await mount(popup(socket));
+        await settle(() => socket.disconnect());
+        await settle(() => socket.emit(PERSON, true, true, Date.now() - 1_000));
+        expect(dialog()).toBeNull();
+        await settle(() => socket.reconnect());
+        expect(dialog()).not.toBeNull();
+        await settle(() => vi.advanceTimersByTime(60_000));
+        expect(dialog()).toBeNull();
+    });
+
+    it('takes a true exactly the close time old, not one ms older', async () => {
+        const atEdge = camera();
+        await mount(popup(atEdge));
+        await settle(() => atEdge.disconnect());
+        await settle(() => atEdge.emit(PERSON, true, true, Date.now() - 60_000));
+        await settle(() => atEdge.reconnect());
+        expect(dialog()).not.toBeNull();
+        mounted.splice(0).forEach(unmount => unmount());
+
+        const past = camera();
+        await mount(popup(past));
+        await settle(() => past.disconnect());
+        await settle(() => past.emit(PERSON, true, true, Date.now() - 60_001));
+        await settle(() => past.reconnect());
+        expect(dialog()).toBeNull();
+    });
+
+    it('opens nothing for an event that began and ended while offline, or was not confirmed', async () => {
+        const socket = camera();
+        await mount(popup(socket));
+        await settle(() => socket.disconnect());
+        await settle(() => socket.emit(PERSON, true, true, Date.now() - 2_000));
+        await settle(() => socket.emit(PERSON, false, true, Date.now() - 1_000));
+        await settle(() => socket.reconnect());
+        expect(dialog()).toBeNull();
+
+        await settle(() => socket.disconnect());
+        await settle(() => socket.emit(PERSON, true, false, Date.now() - 1_000));
+        await settle(() => socket.reconnect());
+        expect(dialog()).toBeNull();
+    });
+
+    it('still opens on the next change after a reconnect', async () => {
+        const socket = camera();
+        await mount(popup(socket));
+        await settle(() => socket.disconnect());
+        await settle(() => socket.reconnect());
+        expect(dialog()).toBeNull();
+        await settle(() => socket.emit(PERSON, true, true, Date.now()));
+        expect(dialog()).not.toBeNull();
+    });
+
+    it('survives a trigger that cannot be read after the reconnect', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const socket = camera();
+        socket.getState = () => Promise.reject(new Error('not connected'));
+        await mount(popup(socket));
+        await settle(() => socket.reconnect());
+        expect(dialog()).toBeNull();
+        expect(warn).toHaveBeenCalledWith(expect.stringContaining(`cannot read ${PERSON}`));
+        warn.mockRestore();
+    });
+
+    it('ignores an answer that arrives after the widget is gone', async () => {
+        const socket = camera();
+        let answer: (state: ioBroker.State) => void = () => undefined;
+        socket.getState = () => new Promise(resolve => (answer = resolve));
+        await mount(popup(socket));
+        await settle(() => socket.reconnect());
+        mounted.splice(0).forEach(unmount => unmount());
+        await settle(() => answer(stateOf(true, true, Date.now())));
+        expect(dialog()).toBeNull();
+    });
+
+    it('works with a socket that reports no connection changes', async () => {
+        const socket = camera();
+        delete socket.registerConnectionHandler;
+        delete socket.unregisterConnectionHandler;
+        await mount(popup(socket));
+        await settle(() => socket.emit(PERSON, true));
+        expect(dialog()).not.toBeNull();
     });
 });
 

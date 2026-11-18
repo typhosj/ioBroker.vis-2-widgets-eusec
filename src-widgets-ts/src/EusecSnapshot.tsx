@@ -4,7 +4,7 @@ import type VisRxWidget from '@iobroker/types-vis-2/visRxWidget';
 
 import { I18N_PREFIX, t } from './i18n';
 import { parseDeviceChannel } from './lib/device';
-import { type LinkSocket, pictureUrl, withVersion } from './lib/deviceLink';
+import { type LinkSocket, pictureUrl, subscribeStates, withVersion } from './lib/deviceLink';
 import { relativeTime } from './lib/relativeTime';
 import { LiveDialog } from './LiveDialog';
 import { LivePlayer } from './LivePlayer';
@@ -99,14 +99,9 @@ export function SnapshotTile(props: SnapshotTileProps): React.JSX.Element {
             return undefined;
         }
         // ts, not lc: eusec writes the same file name for every event, see DeviceListener.onPicture.
-        const handler: ioBroker.StateChangeHandler = (_id, state) =>
-            setPicture({ url: pictureUrl(state?.val), changedAt: typeof state?.ts === 'number' ? state.ts : 0 });
-        socket
-            .subscribeState(pictureId, handler)
-            .catch((error: unknown) =>
-                console.warn(`vis-2-widgets-eusec: cannot subscribe ${pictureId}: ${String(error)}`),
-            );
-        return () => socket.unsubscribeState(pictureId, handler);
+        return subscribeStates(socket, [pictureId], (_id, state) =>
+            setPicture({ url: pictureUrl(state?.val), changedAt: typeof state?.ts === 'number' ? state.ts : 0 }),
+        );
     }, [socket, pictureId]);
 
     useEffect(() => {

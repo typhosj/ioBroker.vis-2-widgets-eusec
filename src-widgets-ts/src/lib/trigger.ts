@@ -40,6 +40,14 @@ export class TriggerWatcher {
         }
     }
 
+    /**
+     * Forgets the last values: the next value per state is a baseline again, as at the start. For a
+     * reconnect, after which the values are read anew.
+     */
+    reset(): void {
+        this.last.clear();
+    }
+
     private isRecent(lc: unknown): boolean {
         // lc is the server's clock; the absolute age also takes a page clock running behind it.
         return (

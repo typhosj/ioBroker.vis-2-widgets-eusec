@@ -65,6 +65,21 @@ describe('SnapshotTile', () => {
         }
     });
 
+    it('shows a picture that eusec wrote while the page was offline once it is back', async () => {
+        const url = '/files/eusec.0/T8010P00/last_event/T8410P00.jpg';
+        const socket = fakeSocket({ states: { [PICTURE]: stateOf(url, true, 1_000) } });
+        const container = await mount({}, socket);
+        await settle(() => socket.disconnect());
+        await settle(() => socket.emit(PICTURE, url, true, 2_000));
+        expect(container.querySelector('img')?.getAttribute('src')).toBe(
+            '/eusec.0/T8010P00/last_event/T8410P00.jpg?t=1000',
+        );
+        await settle(() => socket.reconnect());
+        expect(container.querySelector('img')?.getAttribute('src')).toBe(
+            '/eusec.0/T8010P00/last_event/T8410P00.jpg?t=2000',
+        );
+    });
+
     it('says "no picture" for an undecodable picture', async () => {
         const socket = fakeSocket({
             states: { [PICTURE]: stateOf('/files/eusec.0/T8010P00/last_event/T8410P00.unknown') },

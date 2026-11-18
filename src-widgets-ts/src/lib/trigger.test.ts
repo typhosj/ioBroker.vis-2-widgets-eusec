@@ -118,6 +118,22 @@ describe('TriggerWatcher', () => {
         watch.update('b', { val: true, ack: true });
         expect(fired).toEqual(['b']);
     });
+
+    it('takes the next value as a baseline again after reset', () => {
+        const { watch, fired } = watcher();
+        watch.update(ID, { val: false, ack: true });
+        watch.reset();
+        // A true read after a reconnect counts like one found at the start: only when recent.
+        watch.update(ID, { val: true, ack: true, lc: NOW - RECENT_MS - 1 });
+        expect(fired).toEqual([]);
+        watch.reset();
+        watch.update(ID, { val: true, ack: true, lc: NOW - RECENT_MS });
+        expect(fired).toEqual([ID]);
+        watch.reset();
+        watch.update(ID, { val: true, ack: false, lc: NOW });
+        watch.update(ID, { val: true, ack: true });
+        expect(fired).toEqual([ID]);
+    });
 });
 
 describe('AutoClose', () => {

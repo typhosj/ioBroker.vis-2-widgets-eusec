@@ -14,6 +14,61 @@ export interface LinkSocket {
     unsubscribeState(id: string, cb?: ioBroker.StateChangeHandler): void;
     /** Writes one state. */
     setState(id: string, val: ioBroker.StateValue, ack?: boolean): Promise<void>;
+    /** Reports connects and disconnects; optional, a socket without it is used without. */
+    registerConnectionHandler?(handler: (connected: boolean) => void): void;
+    /** Drops a handler of registerConnectionHandler(). */
+    unregisterConnectionHandler?(handler: (connected: boolean) => void): void;
+}
+
+/**
+ * Subscribes states and reads them again after every reconnect. socket-client then renews the
+ * subscriptions but sends no current value, so a change while the page was offline (e.g. a kiosk
+ * WebView paused under its screensaver) would otherwise be lost until the next one.
+ *
+ * @param socket vis-2 socket
+ * @param ids State IDs, subscribed one by one: given an array, socket-client tells the server to
+ *   drop the whole array on unsubscribe, also for other widgets that still need some of these IDs
+ * @param handler Gets the current values, the changes and the values read after a reconnect
+ * @param onReconnect Called after a reconnect, before the values are read again
+ * @returns Drops the subscriptions; answers that arrive later are ignored
+ */
+export function subscribeStates(
+    socket: LinkSocket,
+    ids: readonly string[],
+    handler: ioBroker.StateChangeHandler,
+    onReconnect?: () => void,
+): () => void {
+    let closed = false;
+    const deliver: ioBroker.StateChangeHandler = (id, state) => {
+        if (!closed) {
+            void handler(id, state);
+        }
+    };
+    for (const id of ids) {
+        socket
+            .subscribeState(id, deliver)
+            .catch((error: unknown) => console.warn(`vis-2-widgets-eusec: cannot subscribe ${id}: ${String(error)}`));
+    }
+    const onConnection = (connected: boolean): void => {
+        if (!connected || closed) {
+            return;
+        }
+        onReconnect?.();
+        for (const id of ids) {
+            socket
+                .getState(id)
+                .then(state => deliver(id, state as ioBroker.State | null | undefined))
+                .catch((error: unknown) => console.warn(`vis-2-widgets-eusec: cannot read ${id}: ${String(error)}`));
+        }
+    };
+    socket.registerConnectionHandler?.(onConnection);
+    return () => {
+        closed = true;
+        socket.unregisterConnectionHandler?.(onConnection);
+        for (const id of ids) {
+            socket.unsubscribeState(id, deliver);
+        }
+    };
 }
 
 /** Receives the state changes of a DeviceLink. */
@@ -64,7 +119,7 @@ export function withVersion(url: string, changedAt: number): string {
 /** Objects, subscriptions and writes of one camera. */
 export class DeviceLink {
     private closed = false;
-    private readonly subscribed: string[] = [];
+    private unsubscribe = (): void => undefined;
 
     /**
      * @param socket vis-2 socket
@@ -123,14 +178,11 @@ export class DeviceLink {
         if (alive !== undefined) {
             this.onState(aliveId, alive);
         }
-        for (const id of [`${channelId}.livestream`, `${channelId}.picture_url`, aliveId]) {
-            this.subscribed.push(id);
-            this.socket
-                .subscribeState(id, this.onState)
-                .catch((error: unknown) =>
-                    console.warn(`vis-2-widgets-eusec: cannot subscribe ${id}: ${String(error)}`),
-                );
-        }
+        this.unsubscribe = subscribeStates(
+            this.socket,
+            [`${channelId}.livestream`, `${channelId}.picture_url`, aliveId],
+            this.onState,
+        );
         return caps;
     }
 
@@ -150,11 +202,8 @@ export class DeviceLink {
     /** Drops the subscriptions; later changes are ignored. */
     close(): void {
         this.closed = true;
-        // One call per ID: given an array, socket-client tells the server to drop the whole array,
-        // also for other widgets that still need some of these IDs.
-        for (const id of this.subscribed.splice(0)) {
-            this.socket.unsubscribeState(id, this.onState);
-        }
+        this.unsubscribe();
+        this.unsubscribe = (): void => undefined;
     }
 
     private readonly onState = (id: string, state: unknown): void => {

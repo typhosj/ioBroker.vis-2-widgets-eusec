@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { CHANNEL, cameraObjects, fakeSocket, stateOf } from '../test/fakeSocket';
 import { parseDeviceChannel } from './device';
-import { DeviceLink, type DeviceListener, pictureUrl, withVersion } from './deviceLink';
+import { DeviceLink, type DeviceListener, pictureUrl, subscribeStates, withVersion } from './deviceLink';
 
 const device = parseDeviceChannel(CHANNEL)!;
 const page = { protocol: 'http:', hostname: '192.168.178.106' };
@@ -157,6 +157,32 @@ describe('DeviceLink', () => {
         expect(socket.unsubscribed.every(id => typeof id === 'string')).toBe(true);
     });
 
+    it('reports what changed while the page was offline once it is back', async () => {
+        const url = '/files/eusec.0/T8010P00/last_event/T8410P00.jpg';
+        const socket = fakeSocket({
+            objects: cameraObjects(['start_stream', 'livestream']),
+            states: {
+                [ALIVE]: stateOf(true),
+                [`${CHANNEL}.livestream`]: stateOf('http://h:1984/stream.html'),
+                [`${CHANNEL}.picture_url`]: stateOf(url, true, 7),
+            },
+        });
+        const events = listener();
+        await new DeviceLink(socket, device, page, events).open();
+        await Promise.resolve();
+        socket.disconnect();
+        // eusec 3.0.x deletes livestream when the stream ends.
+        socket.emit(`${CHANNEL}.livestream`, null);
+        socket.emit(`${CHANNEL}.picture_url`, url, true, 9);
+        socket.emit(ALIVE, false);
+        events.calls.length = 0;
+        socket.reconnect();
+        await Promise.resolve();
+        expect(events.calls.sort()).toEqual(
+            ['live:false', 'alive:false', 'picture:/eusec.0/T8010P00/last_event/T8410P00.jpg@9'].sort(),
+        );
+    });
+
     it('ignores changes after close', async () => {
         const socket = fakeSocket({ objects: cameraObjects(['start_stream']) });
         const events = listener();
@@ -232,5 +258,78 @@ describe('pictureUrl', () => {
 
     it('never turns /files//host into a protocol-relative URL', () => {
         expect(pictureUrl('/files//evil.example/x.jpg')).toBe('/files//evil.example/x.jpg');
+    });
+});
+
+describe('subscribeStates', () => {
+    const A = 'test.0.a';
+    const B = 'test.0.b';
+
+    it('reads every state again after a reconnect, after onReconnect, and not on a disconnect', async () => {
+        const socket = fakeSocket({ states: { [A]: stateOf(1), [B]: stateOf(2) } });
+        const seen: string[] = [];
+        subscribeStates(
+            socket,
+            [A, B],
+            (id, state) => void seen.push(`${id}=${String(state?.val)}`),
+            () => seen.push('reconnect'),
+        );
+        await Promise.resolve();
+        expect(seen.sort()).toEqual([`${A}=1`, `${B}=2`]);
+        seen.length = 0;
+        socket.disconnect();
+        socket.emit(A, 3);
+        await Promise.resolve();
+        expect(seen).toEqual([]);
+        socket.reconnect();
+        await Promise.resolve();
+        expect(seen[0]).toBe('reconnect');
+        expect(seen.slice(1).sort()).toEqual([`${A}=3`, `${B}=2`]);
+    });
+
+    it('still delivers the other states when one cannot be read', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const socket = fakeSocket({ states: { [B]: stateOf(2) } });
+        const getState = socket.getState;
+        socket.getState = id => (id === A ? Promise.reject(new Error('permissionError')) : getState(id));
+        const seen: string[] = [];
+        subscribeStates(socket, [A, B], id => void seen.push(id));
+        await Promise.resolve();
+        seen.length = 0;
+        socket.reconnect();
+        await Promise.resolve();
+        await Promise.resolve();
+        expect(seen).toEqual([B]);
+        expect(warn).toHaveBeenCalledWith(expect.stringContaining(`cannot read ${A}`));
+        warn.mockRestore();
+    });
+
+    it('delivers nothing after unsubscribe, also no answer that was on its way', async () => {
+        const socket = fakeSocket({ states: { [A]: stateOf(1) } });
+        let answer: (state: ioBroker.State) => void = () => undefined;
+        socket.getState = () => new Promise(resolve => (answer = resolve));
+        const seen: string[] = [];
+        const unsubscribe = subscribeStates(socket, [A], id => void seen.push(id));
+        await Promise.resolve();
+        seen.length = 0;
+        socket.reconnect();
+        unsubscribe();
+        answer(stateOf(5));
+        await Promise.resolve();
+        expect(seen).toEqual([]);
+        expect(socket.connectionHandlers.size).toBe(0);
+        expect(socket.unsubscribed).toEqual([A]);
+    });
+
+    it('subscribes with a socket that reports no connection changes', async () => {
+        const socket = fakeSocket({ states: { [A]: stateOf(1) } });
+        delete socket.registerConnectionHandler;
+        delete socket.unregisterConnectionHandler;
+        const seen: string[] = [];
+        const unsubscribe = subscribeStates(socket, [A], id => void seen.push(id));
+        await Promise.resolve();
+        expect(seen).toEqual([A]);
+        unsubscribe();
+        expect(socket.unsubscribed).toEqual([A]);
     });
 });

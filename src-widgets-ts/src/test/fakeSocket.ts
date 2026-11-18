@@ -18,6 +18,12 @@ export interface FakeSocket extends LinkSocket {
      * `lc` moves to `ts` only when the value changes.
      */
     emit(id: string, val: ioBroker.StateValue | null, ack?: boolean, ts?: number): void;
+    /** Drops the connection: emit() changes the states but reaches no subscriber until reconnect(). */
+    disconnect(): void;
+    /** Connects again like socket-client: the subscriptions stay, no current value is sent. */
+    reconnect(): void;
+    /** Handlers of registerConnectionHandler(). */
+    connectionHandlers: Set<(connected: boolean) => void>;
 }
 
 /**
@@ -83,7 +89,20 @@ export function fakeSocket(
     const writes: FakeSocket['writes'] = [];
     const unsubscribed: unknown[] = [];
     const pending: Array<() => void> = [];
+    const connectionHandlers = new Set<(connected: boolean) => void>();
+    let online = true;
     return {
+        connectionHandlers,
+        registerConnectionHandler: handler => connectionHandlers.add(handler),
+        unregisterConnectionHandler: handler => connectionHandlers.delete(handler),
+        disconnect() {
+            online = false;
+            connectionHandlers.forEach(handler => handler(false));
+        },
+        reconnect() {
+            online = true;
+            connectionHandlers.forEach(handler => handler(true));
+        },
         handlers,
         writes,
         unsubscribed,
@@ -122,12 +141,16 @@ export function fakeSocket(
         emit(id, val, ack = true, ts = 2) {
             if (val === null) {
                 delete states[id];
-                void handlers.get(id)?.(id, null);
+                if (online) {
+                    void handlers.get(id)?.(id, null);
+                }
                 return;
             }
             const previous = states[id];
             states[id] = stateOf(val, ack, previous?.val === val ? previous.lc : ts, ts);
-            void handlers.get(id)?.(id, states[id]);
+            if (online) {
+                void handlers.get(id)?.(id, states[id]);
+            }
         },
     };
 }
