@@ -9,6 +9,7 @@ import { I18N_PREFIX } from './i18n';
 import { LIMITS, clampNumber, cssValue } from './lib/attrs';
 
 export type PtzMode = 'hover' | 'always' | 'never';
+export type LoadingView = 'picture' | 'spinner';
 
 /** Player attributes shared by all three widgets. */
 export interface PlayerSettings {
@@ -18,6 +19,8 @@ export interface PlayerSettings {
     mode: unknown;
     /** Raw start timeout attribute (s). */
     startTimeoutS: unknown;
+    /** What shows while the stream loads. */
+    loadingView: LoadingView;
     /** When the pan and tilt controls show. */
     ptz: PtzMode;
     /** Raw repeat interval attribute (ms). */
@@ -73,6 +76,16 @@ export const playerFields: RxWidgetInfoAttributesField[] = [
         default: LIMITS.startTimeoutS.def,
     },
     {
+        name: 'loadingView',
+        label: label('loadingView'),
+        type: 'select',
+        options: [
+            { value: 'picture', label: label('loadingView_picture') },
+            { value: 'spinner', label: label('loadingView_spinner') },
+        ],
+        default: 'picture',
+    },
+    {
         name: 'ptz',
         label: label('ptz'),
         type: 'select',
@@ -115,6 +128,8 @@ export function playerProps(data: Record<string, unknown>): PlayerSettings {
         audio: data.audio === true,
         mode: data.mode,
         startTimeoutS: data.startTimeout,
+        // The event picture for anything unknown: widgets saved before the attribute existed keep it.
+        loadingView: data.loadingView === 'spinner' ? 'spinner' : 'picture',
         ptz: ptzMode(data.ptz),
         ptzRepeatMs: data.ptzRepeat,
     };

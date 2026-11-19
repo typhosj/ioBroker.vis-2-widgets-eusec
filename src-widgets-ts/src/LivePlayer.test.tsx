@@ -34,6 +34,7 @@ function player(socket: FakeSocket, overrides: Partial<LivePlayerProps> = {}): R
             audio={false}
             mode="mse"
             startTimeoutS={30}
+            loadingView="picture"
             ptz="hover"
             ptzRepeatMs={500}
             {...overrides}
@@ -85,6 +86,39 @@ describe('LivePlayer', () => {
         // go2rtc's player sizes the video to the frame, and a video keeps its aspect ratio inside it
         // (contain). "cover" would show another part of the picture than the video that follows it.
         expect(picture?.style.objectFit).toBe('contain');
+    });
+
+    it('shows a loading animation instead of the picture while the stream starts, when set', async () => {
+        const socket = camera302();
+        socket.emit(`${CHANNEL}.picture_url`, '/files/eusec.0/T8010P00/last_event/T8410P00.jpg', true, 7);
+        const container = await mount(player(socket, { loadingView: 'spinner' }));
+        expect(container.querySelector('[data-testid="loading"]')).not.toBeNull();
+        expect(container.querySelector('img')).toBeNull();
+    });
+
+    it('stops the loading animation when the system asks for less motion', async () => {
+        const query = vi.fn((media: string) => ({ matches: media === '(prefers-reduced-motion: reduce)' }));
+        vi.stubGlobal('matchMedia', query);
+        try {
+            const still = await mount(player(camera302(), { loadingView: 'spinner' }));
+            expect(query).toHaveBeenCalledWith('(prefers-reduced-motion: reduce)');
+            expect(still.querySelector('[data-testid="loading"] svg')).not.toBeNull();
+            expect(still.querySelector('animateTransform')).toBeNull();
+        } finally {
+            vi.unstubAllGlobals();
+        }
+        // No matchMedia (jsdom, old WebViews): the arc turns.
+        const turning = await mount(player(camera302(), { loadingView: 'spinner' }));
+        expect(turning.querySelector('animateTransform')).not.toBeNull();
+    });
+
+    it('shows no loading animation while no stream starts', async () => {
+        const socket = camera302();
+        socket.emit(`${CHANNEL}.picture_url`, '/files/eusec.0/T8010P00/last_event/T8410P00.jpg', true, 7);
+        // The editor never starts a stream, so nothing is loading.
+        const container = await mount(player(socket, { loadingView: 'spinner', active: false }));
+        expect(container.querySelector('[data-testid="loading"]')).toBeNull();
+        expect(container.querySelector('img')).toBeNull();
     });
 
     it('shows no waiting picture when the camera has none yet', async () => {
@@ -212,6 +246,7 @@ describe('EusecLive', () => {
             'device',
             'audio',
             'startTimeout',
+            'loadingView',
             'ptz',
             'ptzRepeat',
             'mode',

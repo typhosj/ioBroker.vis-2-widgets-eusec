@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { DEFAULT_DIALOG_LOOK, dialogFields, dialogLook } from './widgetInfo';
+import { DEFAULT_DIALOG_LOOK, dialogFields, dialogLook, playerProps } from './widgetInfo';
 
 describe('dialogLook', () => {
     afterEach(() => vi.unstubAllGlobals());
@@ -66,5 +66,16 @@ describe('dialogLook', () => {
             'dialogFont',
             'dialogTitleSize',
         ]);
+    });
+});
+
+describe('playerProps', () => {
+    it('shows the loading animation only when chosen, the event picture for anything else', () => {
+        expect(playerProps({ loadingView: 'spinner' }).loadingView).toBe('spinner');
+        expect(playerProps({ loadingView: 'picture' }).loadingView).toBe('picture');
+        // Saved before the attribute existed, or a stray value.
+        expect(playerProps({}).loadingView).toBe('picture');
+        expect(playerProps({ loadingView: 'Spinner' }).loadingView).toBe('picture');
+        expect(playerProps({ loadingView: true }).loadingView).toBe('picture');
     });
 });

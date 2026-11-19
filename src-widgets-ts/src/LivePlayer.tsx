@@ -87,6 +87,16 @@ function statusText(hasDevice: boolean, link: LinkState, view: StreamView): stri
 }
 
 /**
+ * Whether the system asks for less motion ("reduce motion" / "remove animations").
+ *
+ * @returns True when the loading animation has to stand still
+ */
+function reducedMotion(): boolean {
+    // Old WebViews and jsdom have no matchMedia.
+    return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
  * The livestream of one camera, with snapshot placeholder, status line and pan and tilt controls.
  *
  * @param props Socket, camera and player settings
@@ -252,7 +262,58 @@ export function LivePlayer(props: LivePlayerProps): React.JSX.Element {
                     onLoad={() => controllerRef.current?.iframeLoaded()}
                 />
             ) : null}
-            {view.placeholder && picture.url ? (
+            {view.placeholder && props.loadingView === 'spinner' && view.phase === 'starting' ? (
+                // Opaque like the picture: covers go2rtc's page until the video plays.
+                <div
+                    data-testid="loading"
+                    style={{
+                        ...fill,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: '#000',
+                    }}
+                >
+                    <svg
+                        viewBox="0 0 50 50"
+                        width={48}
+                        height={48}
+                        aria-hidden="true"
+                    >
+                        <circle
+                            cx={25}
+                            cy={25}
+                            r={20}
+                            fill="none"
+                            stroke="rgba(255, 255, 255, 0.25)"
+                            strokeWidth={5}
+                        />
+                        <circle
+                            cx={25}
+                            cy={25}
+                            r={20}
+                            fill="none"
+                            stroke="#fff"
+                            strokeWidth={5}
+                            strokeLinecap="round"
+                            strokeDasharray="31 126"
+                        >
+                            {/* A still arc for "reduce motion"; the status line says the stream is starting. */}
+                            {reducedMotion() ? null : (
+                                <animateTransform
+                                    attributeName="transform"
+                                    type="rotate"
+                                    from="0 25 25"
+                                    to="360 25 25"
+                                    dur="1s"
+                                    repeatCount="indefinite"
+                                />
+                            )}
+                        </circle>
+                    </svg>
+                </div>
+            ) : null}
+            {view.placeholder && props.loadingView !== 'spinner' && picture.url ? (
                 <img
                     src={withVersion(picture.url, picture.changedAt)}
                     alt=""

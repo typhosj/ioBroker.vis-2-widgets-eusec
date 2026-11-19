@@ -40,7 +40,14 @@ function popup(socket: FakeSocket, overrides: Partial<EventPopupProps> = {}): Re
             sizePercent={100}
             title="Haustür"
             editMode={false}
-            player={{ audio: false, mode: 'mse', startTimeoutS: 30, ptz: 'never', ptzRepeatMs: 500 }}
+            player={{
+                audio: false,
+                mode: 'mse',
+                startTimeoutS: 30,
+                loadingView: 'picture',
+                ptz: 'never',
+                ptzRepeatMs: 500,
+            }}
             {...overrides}
         />
     );

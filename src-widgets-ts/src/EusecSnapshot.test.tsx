@@ -23,7 +23,14 @@ async function mount(props: Partial<SnapshotTileProps>, socket = fakeSocket()): 
                 sizePercent={100}
                 editMode={false}
                 language="en"
-                player={{ audio: false, mode: 'mse', startTimeoutS: 30, ptz: 'never', ptzRepeatMs: 500 }}
+                player={{
+                    audio: false,
+                    mode: 'mse',
+                    startTimeoutS: 30,
+                    loadingView: 'picture',
+                    ptz: 'never',
+                    ptzRepeatMs: 500,
+                }}
                 {...props}
             />,
         ),

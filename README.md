@@ -12,7 +12,8 @@ respective owners and are used here only to name the cameras the widgets work wi
 ## Widgets
 
 - **Live camera**: plays the livestream while the widget is visible and stops it when it is not.
-  Shows the last snapshot until the first picture arrives. Pan and tilt controls appear for cameras
+  Shows the last snapshot until the first picture arrives, or a loading animation if "While the
+  stream loads" says so. Pan and tilt controls appear for cameras
   that have them, preset buttons from eusec 3.2.0 on.
 - **Event popup**: invisible until one of its triggers turns true (by default `ringing` and
   `person_detected` of the camera, where they exist), then opens the livestream in a dialog and
@@ -71,6 +72,7 @@ All widgets and their settings stay as they are.
 
 ### **WORK IN PROGRESS**
 
+- (typhosj) New attribute "While the stream loads": shows a loading animation instead of the last event picture until the livestream plays; it stands still when the system asks for reduced motion
 - (typhosj) The event popup also opens for a trigger that turned true while the page had lost its connection, for example under the screensaver of a kiosk tablet
 - (typhosj) After a lost connection, the live view and the snapshot pick up what changed meanwhile (a new event picture, a stream that ended, eusec stopping or starting) instead of waiting for the next change
 
